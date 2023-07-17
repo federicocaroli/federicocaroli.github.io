@@ -211,7 +211,6 @@ def main():
 				logger.record(f"Line with a number of info different from 3! Filename: {file}, Line: {line}", logLevel=ERROR, module=_MODULE, code=1)
 				raise Exception(f"Line with a number of info different from 3! Filename: {file}, Line: {line}")
 
-
 		for line in lines:
 			if line.strip() == "":
 				continue
@@ -259,14 +258,18 @@ def checkCompleteWork(logger: Diagnostic, csv_file: str):
 		backup_lines = json.load(f)
 	
 	for csv_line in csv_lines:
-		infos = csv_line.split(';')
-		csv_url = infos[1].strip()
+		if ';' in csv_line:
+			infos = csv_line.split(';')
+			csv_url = infos[1].strip()
 
-		for backup_line in backup_lines:
-			if csv_url == backup_line["url"]:
-				break
+			for backup_line in backup_lines:
+				if csv_url == backup_line["url"]:
+					break
+			else:
+				logger.record(f"Song not downloaded! song: {infos}", logLevel=ERROR, module=_MODULE, code=1)
 		else:
-			logger.record(f"Song not downloaded! song: {infos}", logLevel=ERROR, module=_MODULE, code=1)
+			logger.record(f"Line in csv file without ';'. Line: {csv_line}", logLevel=WARNING, module=_MODULE, code=1)
+
 
 if __name__ == "__main__":
 	import sys

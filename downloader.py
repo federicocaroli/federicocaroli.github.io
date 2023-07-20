@@ -199,6 +199,10 @@ def main():
 		
 		logger.record(f"File to elaborate found! Filename: {file}", logLevel=INFO, module=_MODULE, code=1)
 
+		dirName = file.replace(".csv", "")
+		if os.path.isdir(f"./songs/{dirName}") is False:
+			os.mkdir(f"./songs/{dirName}")
+
 		with open(file, 'r', encoding='utf-8') as f:
 			lines = f.readlines()
 		
@@ -227,11 +231,11 @@ def main():
 			
 			logger.record(f"New song: {info_dict}", logLevel=DEBUG, module=_MODULE, code=1)
 
-			if os.path.isdir(f"./songs/{info_dict['genre']}") is False:
+			if os.path.isdir(f"./songs/{dirName}/{info_dict['genre']}") is False:
 				logger.record(f"New genre found! Genre: {info_dict['genre']}", logLevel=INFO, module=_MODULE, code=1)
-				os.mkdir(f"./songs/{info_dict['genre']}")
+				os.mkdir(f"./songs/{dirName}/{info_dict['genre']}")
 			
-			ydl_opts['outtmpl'] = f"./songs/{info_dict['genre']}/{info_dict['name']}"	#.mp3 is inserted by youtube_dl
+			ydl_opts['outtmpl'] = f"./songs/{dirName}/{info_dict['genre']}/{info_dict['name']}"	#.mp3 is inserted by youtube_dl
 
 			try:
 				with youtube_dl.YoutubeDL(ydl_opts) as ydl:
@@ -239,10 +243,10 @@ def main():
 			except Exception as e:
 				logger.record(f"Exception while downloading! Song: {info_dict}", logLevel=ERROR, module=_MODULE, code=1, exc=e)
 			else:
-				if os.path.isfile(f"./songs/{info_dict['genre']}/{info_dict['name']}.mp3") is True:
+				if os.path.isfile(f"./songs/{dirName}/{info_dict['genre']}/{info_dict['name']}.mp3") is True:
 					music_already_downloaded.append(info_dict)
 				else:
-					logger.record(f"Song not found in genre dir! Song: {info_dict}, Path: ./songs/{info_dict['genre']}/{info_dict['name']}.mp3", logLevel=ERROR, module=_MODULE, code=1)
+					logger.record(f"Song not found in genre dir! Song: {info_dict}, Path: ./songs/{dirName}/{info_dict['genre']}/{info_dict['name']}.mp3", logLevel=ERROR, module=_MODULE, code=1)
 
 		with open(_BACKUP_FILE, 'w', encoding='utf-8') as f:
 			json.dump(music_already_downloaded, f, indent=4)

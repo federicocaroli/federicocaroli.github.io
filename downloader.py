@@ -1,5 +1,5 @@
 import yt_dlp as youtube_dl
-import logging, threading, copy, os, sys, datetime, json, os.path
+import logging, threading, copy, os, sys, datetime, json, os.path, subprocess
 
 # Log levels constants
 DEBUG = logging.DEBUG
@@ -284,5 +284,6 @@ if __name__ == "__main__":
 		ptvsd.enable_attach(address=('192.168.1.147', 3001))
 		# Pause the program until a remote debugger is attached	
 		ptvsd.wait_for_attach()
-
+		
+	subprocess.check_call("pip3 install --upgrade youtube-dl", shell=True)
 	main()

@@ -239,6 +239,7 @@ def main():
 
 			try:
 				with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+					ydl.cache.remove()
 					ydl.download([info_dict["url"]])
 			except Exception as e:
 				logger.record(f"Exception while downloading! Song: {info_dict}", logLevel=ERROR, module=_MODULE, code=1, exc=e)
@@ -286,4 +287,5 @@ if __name__ == "__main__":
 		ptvsd.wait_for_attach()
 		
 	subprocess.check_call("pip3 install --upgrade youtube-dl", shell=True)
+	subprocess.check_call("pip3 install --upgrade yt-dlp", shell=True)
 	main()

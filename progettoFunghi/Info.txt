@@ -1,0 +1,31 @@
+Parametri:
+Precipitazione cumulata su 15 min
+Temperatura dell'aria istantanea a 2 m dal suolo
+Umidita' relativa dell'aria istantanea a 2 m dal suolo
+Direzione media degli ultimi 10 minuti del vento a 10 m dal suolo
+Direzione media vettoriale degli ultimi 15 minuti del vento a 10 m dal suolo
+Velocita' media vettoriale degli ultimi 15 minuti del vento a 10 m dal suolo
+Velocita' media scalare degli ultimi 15 minuti del vento a 10 m dal suolo
+
+Sensori disponibili per stazione:
+Civago precipitazioni, temperatura
+Ospitaletto precipitazioni, temperatura
+Lago Paduli precipitazioni, temperatura
+Sassotorno precipitazioni, temperatura
+Doccia di Fiumalbo precipitazioni, temperatura
+Ligonchio precipitazioni, temperatura
+Frassinoro precipitazioni, temperatura
+Febbio umidità, direzione vento, precipitazioni, temperatura
+Collagna precipitazioni, temperatura
+Lago Scaffaiolo Nivo temperatura
+Lago Scaffaiolo direzione vento, precipitazioni, temperatura
+Villa minozzo precipitazioni, temperatura
+Passo delle radici precipitazioni, temperatura
+Sestola precipitazioni, temperatura
+Pievepelago precipitazioni, temperatura
+Succiso precipitazioni
+Isola Palanzano precipitazioni, temperatura
+Ramiseto Precipitazioni, temperatura
+Monteacuto delle Alpi Precipitazioni, temperatura
+Piandelagotti Precipitazioni, temperatura
+Lago Pratignano Precipitazioni, temperatura

@@ -1,0 +1,4 @@
+# Requirements for ProgettoFunghi
+
+mariadb == 1.0.11
+requests == 2.31.0

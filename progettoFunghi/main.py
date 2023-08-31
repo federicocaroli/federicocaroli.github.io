@@ -71,7 +71,7 @@ def main(logger: diagnostic.Diagnostic, db: database.DatabaseHandler):
 						
 						datetimeString = jsonRecord[DATE_KEY].replace("Z", "+00:00")
 						datetimeObject = datetime.datetime.fromisoformat(datetimeString)
-						startTimestamp = int(datetimeObject.timestamp())
+						endTimestamp = int(datetimeObject.timestamp())
 
 						stationName = None
 						stationLatitude = None
@@ -79,7 +79,7 @@ def main(logger: diagnostic.Diagnostic, db: database.DatabaseHandler):
 						stationAltitude = None
 
 						instantaneousData = {"Temperature": None, "Humidity": None, "WindDirection": None, "WindSpeed": None}
-						accumulationData = {"Timerange": None, "EndTimestamp": None, "Precipitation": None}
+						accumulationData = {"Timerange": None, "StartTimestamp": None, "Precipitation": None}
 
 						for dataElem in jsonRecord[DATA_KEY]:
 							
@@ -104,23 +104,28 @@ def main(logger: diagnostic.Diagnostic, db: database.DatabaseHandler):
 								if dataElem["timerange"][0] == 1 and DATA_CODES.PRECIPITATION in dataElem["vars"]:
 									if accumulationData["Timerange"] == None or accumulationData["Timerange"] > dataElem["timerange"][2]:
 										accumulationData["Precipitation"] = dataElem["vars"][DATA_CODES.PRECIPITATION][GENERIC_VALUE_KEY]
-										accumulationData["EndTimestamp"] = startTimestamp + dataElem["timerange"][2]
+										accumulationData["StartTimestamp"] = endTimestamp - dataElem["timerange"][2]
 										accumulationData["Timerange"] = dataElem["timerange"][2]
 
 								elif dataElem["timerange"][0] == 254:
-									if DATA_CODES.TEMPERATURE in dataElem["vars"] and instantaneousData["Temperature"] == None:
-										instantaneousData["Temperature"] = dataElem["vars"][DATA_CODES.TEMPERATURE][GENERIC_VALUE_KEY]
+									if DATA_CODES.TEMPERATURE in dataElem["vars"] and instantaneousData["Temperature"] == None and dataElem["vars"][DATA_CODES.TEMPERATURE][GENERIC_VALUE_KEY] != None:
+										instantaneousData["Temperature"] = dataElem["vars"][DATA_CODES.TEMPERATURE][GENERIC_VALUE_KEY] - 273.15
+										if instantaneousData["Temperature"] < 0:
+											raise Exception(f"Temperature value is negative. Record: {jsonRecord}")
 									elif DATA_CODES.TEMPERATURE in dataElem["vars"] and instantaneousData["Temperature"] != None:
 										logger.record(msg= f"Duplicated Temperature in the same record. Record: {jsonRecord}", logLevel= diagnostic.WARNING, module= MODULE)
-									if DATA_CODES.RELATIVE_HUMIDITY in dataElem["vars"] and instantaneousData["Humidity"] == None:
+									
+									if DATA_CODES.RELATIVE_HUMIDITY in dataElem["vars"] and instantaneousData["Humidity"] == None and dataElem["vars"][DATA_CODES.RELATIVE_HUMIDITY][GENERIC_VALUE_KEY] != None:
 										instantaneousData["Humidity"] = dataElem["vars"][DATA_CODES.RELATIVE_HUMIDITY][GENERIC_VALUE_KEY]
 									elif DATA_CODES.RELATIVE_HUMIDITY in dataElem["vars"] and instantaneousData["Humidity"] != None:
 										logger.record(msg= f"Duplicated Humidity in the same record. Record: {jsonRecord}", logLevel= diagnostic.WARNING, module= MODULE)
-									if DATA_CODES.WIND_DIRECTION in dataElem["vars"] and instantaneousData["WindDirection"] == None:
+									
+									if DATA_CODES.WIND_DIRECTION in dataElem["vars"] and instantaneousData["WindDirection"] == None and dataElem["vars"][DATA_CODES.WIND_DIRECTION][GENERIC_VALUE_KEY] != None:
 										instantaneousData["WindDirection"] = dataElem["vars"][DATA_CODES.WIND_DIRECTION][GENERIC_VALUE_KEY]
 									elif DATA_CODES.WIND_DIRECTION in dataElem["vars"] and instantaneousData["WindDirection"] != None:
 										logger.record(msg= f"Duplicated WindDirection in the same record. Record: {jsonRecord}", logLevel= diagnostic.WARNING, module= MODULE)
-									if DATA_CODES.WIND_SPEED in dataElem["vars"] and instantaneousData["WindSpeed"] == None:
+									
+									if DATA_CODES.WIND_SPEED in dataElem["vars"] and instantaneousData["WindSpeed"] == None and dataElem["vars"][DATA_CODES.WIND_SPEED][GENERIC_VALUE_KEY] != None:
 										instantaneousData["WindSpeed"] = dataElem["vars"][DATA_CODES.WIND_SPEED][GENERIC_VALUE_KEY]
 									elif DATA_CODES.WIND_SPEED in dataElem["vars"] and instantaneousData["WindSpeed"] != None:
 										logger.record(msg= f"Duplicated WindSpeed in the same record. Record: {jsonRecord}", logLevel= diagnostic.WARNING, module= MODULE)
@@ -141,7 +146,7 @@ def main(logger: diagnostic.Diagnostic, db: database.DatabaseHandler):
 							else:
 								db.addNewStationRecords([{"Name": stationName, "Latitude": stationLatitude, "Longitude": stationLongitude, "Altitude": stationAltitude}])
 								stationsInfo = db.getStationRecords()
-						elif startTimestamp <= stationsInfo[stationName]["LastUpdate"]:
+						elif endTimestamp <= stationsInfo[stationName]["LastUpdate"]:
 							continue
 
 						saveAccumulationData = True
@@ -189,14 +194,14 @@ def main(logger: diagnostic.Diagnostic, db: database.DatabaseHandler):
 							saveInstantaneousData = False
 
 						if saveAccumulationData == True:
-							db.storePeriodicDataRecords([{"StationName": stationName, "StartTimestamp": startTimestamp, "EndTimestamp": accumulationData["EndTimestamp"], "Precipitation": accumulationData["Precipitation"]}])
+							db.storePeriodicDataRecords([{"StationName": stationName, "StartTimestamp": accumulationData["StartTimestamp"], "EndTimestamp": endTimestamp, "Precipitation": accumulationData["Precipitation"]}])
 							periodicRowAdded += 1
 
 						if saveInstantaneousData == True:
-							db.storeInstantaneousDataRecords([{"StationName": stationName, "Timestamp": startTimestamp, "Temperature": instantaneousData["Temperature"], "Humidity": instantaneousData["Humidity"], "WindDirection": instantaneousData["WindDirection"], "WindSpeed": instantaneousData["WindSpeed"]}])
+							db.storeInstantaneousDataRecords([{"StationName": stationName, "Timestamp": endTimestamp, "Temperature": instantaneousData["Temperature"], "Humidity": instantaneousData["Humidity"], "WindDirection": instantaneousData["WindDirection"], "WindSpeed": instantaneousData["WindSpeed"]}])
 							instantaneousRowAdded += 1
 
-						db.updateLastUpdateOfStationRecords([{"Name": stationName, "LastUpdate": startTimestamp}])
+						db.updateLastUpdateOfStationRecords([{"Name": stationName, "LastUpdate": endTimestamp}])
 
 					except Exception as e:
 						logger.record(msg= f"Error while parsing data record. Record: {jsonRecord}", logLevel= diagnostic.ERROR, module= MODULE, exc= e)

@@ -164,9 +164,9 @@ class DatabaseHandler:
 			except Exception as e:
 				self._logger.record(msg= f"Exception occured while storing new station records into DB. Records: {dbRecords}", logLevel= diagnostic.ERROR, module=_MODULE, exc= e)
 				raise e
-
-			cur.close()
-			conn.close()
+			finally:
+				cur.close()
+				conn.close()
 
 	def updateLastUpdateOfStationRecords(self, records: list):
 		if type(records) != list:
@@ -192,9 +192,9 @@ class DatabaseHandler:
 			except Exception as e:
 				self._logger.record(msg= f"Exception occured while updating last update of station records into DB. Records: {dbRecords}", logLevel= diagnostic.ERROR, module=_MODULE, exc= e)
 				raise e
-
-			cur.close()
-			conn.close()
+			finally:
+				cur.close()
+				conn.close()
 
 	def getStationRecords(self) -> dict:
 		

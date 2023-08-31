@@ -55,9 +55,9 @@ for line in lines[2:]:
                 raise Exception(f"Periodic data with start time {startTime} already present")
         elif dataName == "Temperatura":
             if startTime not in instantaneousData:
-                instantaneousData[startTime] = {"startTime": startTime, "endTime": endTime, "Temperatura": value+273.15, "Umidita": None, "DirezioneVento": None, "VelocitaVento": None}
+                instantaneousData[startTime] = {"startTime": startTime, "endTime": endTime, "Temperatura": value, "Umidita": None, "DirezioneVento": None, "VelocitaVento": None}
             elif startTime in instantaneousData and instantaneousData[startTime]["Temperatura"] == None:
-                instantaneousData[startTime]["Temperatura"] = value+273.15
+                instantaneousData[startTime]["Temperatura"] = value
             else:
                 raise Exception(f"Temperatura data with start time {startTime} already present. Record: {instantaneousData[startTime]}")
         elif dataName == "Umidita":

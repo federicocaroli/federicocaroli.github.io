@@ -38,9 +38,13 @@ def main(logger: diagnostic.Diagnostic, db: database.DatabaseHandler):
 	firstRound = True
 
 	while True:
+
+		periodicRowAdded = 0
+		instantaneousRowAdded = 0
+
 		try:
 			if firstRound == False:
-				time.sleep(60 * 60)
+				time.sleep(15 * 60)
 			else:
 				firstRound = False
 
@@ -74,12 +78,10 @@ def main(logger: diagnostic.Diagnostic, db: database.DatabaseHandler):
 						stationLongitude = None
 						stationAltitude = None
 
-						dataInRecord = jsonRecord[DATA_KEY]
-
 						instantaneousData = {"Temperature": None, "Humidity": None, "WindDirection": None, "WindSpeed": None}
 						accumulationData = {"Timerange": None, "EndTimestamp": None, "Precipitation": None}
 
-						for dataElem in dataInRecord:
+						for dataElem in jsonRecord[DATA_KEY]:
 							
 							# Station info
 							if "vars" in dataElem and "timerange" not in dataElem and "level" not in dataElem:
@@ -97,6 +99,7 @@ def main(logger: diagnostic.Diagnostic, db: database.DatabaseHandler):
 								stationLongitude = dataElem["vars"][STATION_CODES.LONGITUDE][GENERIC_VALUE_KEY]
 								stationAltitude = dataElem["vars"][STATION_CODES.ALTITUDE][GENERIC_VALUE_KEY]
 
+							# data values
 							elif "vars" in dataElem and "timerange" in dataElem and "level" in dataElem:
 								if dataElem["timerange"][0] == 1 and DATA_CODES.PRECIPITATION in dataElem["vars"]:
 									if accumulationData["Timerange"] == None or accumulationData["Timerange"] > dataElem["timerange"][2]:
@@ -107,14 +110,22 @@ def main(logger: diagnostic.Diagnostic, db: database.DatabaseHandler):
 								elif dataElem["timerange"][0] == 254:
 									if DATA_CODES.TEMPERATURE in dataElem["vars"] and instantaneousData["Temperature"] == None:
 										instantaneousData["Temperature"] = dataElem["vars"][DATA_CODES.TEMPERATURE][GENERIC_VALUE_KEY]
+									elif DATA_CODES.TEMPERATURE in dataElem["vars"] and instantaneousData["Temperature"] != None:
+										logger.record(msg= f"Duplicated Temperature in the same record. Record: {jsonRecord}", logLevel= diagnostic.WARNING, module= MODULE)
 									if DATA_CODES.RELATIVE_HUMIDITY in dataElem["vars"] and instantaneousData["Humidity"] == None:
 										instantaneousData["Humidity"] = dataElem["vars"][DATA_CODES.RELATIVE_HUMIDITY][GENERIC_VALUE_KEY]
+									elif DATA_CODES.RELATIVE_HUMIDITY in dataElem["vars"] and instantaneousData["Humidity"] != None:
+										logger.record(msg= f"Duplicated Humidity in the same record. Record: {jsonRecord}", logLevel= diagnostic.WARNING, module= MODULE)
 									if DATA_CODES.WIND_DIRECTION in dataElem["vars"] and instantaneousData["WindDirection"] == None:
 										instantaneousData["WindDirection"] = dataElem["vars"][DATA_CODES.WIND_DIRECTION][GENERIC_VALUE_KEY]
+									elif DATA_CODES.WIND_DIRECTION in dataElem["vars"] and instantaneousData["WindDirection"] != None:
+										logger.record(msg= f"Duplicated WindDirection in the same record. Record: {jsonRecord}", logLevel= diagnostic.WARNING, module= MODULE)
 									if DATA_CODES.WIND_SPEED in dataElem["vars"] and instantaneousData["WindSpeed"] == None:
 										instantaneousData["WindSpeed"] = dataElem["vars"][DATA_CODES.WIND_SPEED][GENERIC_VALUE_KEY]
+									elif DATA_CODES.WIND_SPEED in dataElem["vars"] and instantaneousData["WindSpeed"] != None:
+										logger.record(msg= f"Duplicated WindSpeed in the same record. Record: {jsonRecord}", logLevel= diagnostic.WARNING, module= MODULE)
 							else:
-								raise Exception(f"Invalid {dataElem}")
+								logger.record(msg= f"Unknown record format. Record: {jsonRecord}", logLevel= diagnostic.WARNING, module= MODULE)
 						
 						if stationName is None:
 							raise Exception(f"Station name not present in {jsonRecord}")
@@ -133,37 +144,69 @@ def main(logger: diagnostic.Diagnostic, db: database.DatabaseHandler):
 						elif startTimestamp <= stationsInfo[stationName]["LastUpdate"]:
 							continue
 
-						if accumulationData["Precipitation"] != None:
-							db.storePeriodicDataRecords([{"StationName": stationName, "StartTimestamp": startTimestamp, "EndTimestamp": accumulationData["EndTimestamp"], "Precipitation": accumulationData["Precipitation"]}])
-							# per il futuro
-							if stationName in ["Lago Scaffaiolo Nivo"]:
-								logger.record(msg= f"LAGO SCAFFOIOLO NIVO HA INVIATO DATI DI PIOGGIA PER LA PRIMA VOLTA!!!!!!!!!!!. Record: {record}", logLevel= diagnostic.INFO, module= MODULE)
-						elif stationName in ["Lago Scaffaiolo Nivo"]:
-							pass
-						else:
-							raise Exception(f"Accumulation data are none. Station name: {stationName}. Line: {record}")
+						saveAccumulationData = True
+						saveInstantaneousData = True
 
-						if any(value != None for value in instantaneousData.values()):
+						try:
+							if accumulationData["Precipitation"] == None:
+								saveAccumulationData = False
+								if stationName in ["Lago Scaffaiolo Nivo"]:
+									pass
+								else:
+									raise Exception(f"Accumulation data are none. Station name: {stationName}")
+							else:
+								# per cambiamenti dell'API future
+								if stationName in ["Lago Scaffaiolo Nivo"]:
+									logger.record(msg= f"LAGO SCAFFOIOLO NIVO HA INVIATO DATI PERIODICI PER LA PRIMA VOLTA!!!!!!!!!!!. Record: {jsonRecord}", logLevel= diagnostic.INFO, module= MODULE)
+
+							if accumulationData["Precipitation"] != None and accumulationData["Timerange"] != 900:
+								raise Exception(f"{stationName.upper()} vuole inviare dati periodici con periodicità diversa da 15 min")
+						except Exception as e:
+							logger.record(msg= f"Error while checking accumulation data. Record: {jsonRecord}", logLevel= diagnostic.ERROR, module= MODULE, exc= e)
+							saveAccumulationData = False
+
+						try:
+							if all(value == None for value in instantaneousData.values()):
+								saveInstantaneousData = False
+								if stationName in ["Lago Scaffaiolo", "Passo delle Radici", "Sestola", "Pievepelago", "Isola Palanzano", "Lago Paduli", "Frassinoro", "Sassostorno", "Doccia di Fiumalbo", "Ligonchio", "Febbio", "Collagna", "Villa Minozzo", "Ramiseto", "Piandelagotti", "Lago Pratignano", "Civago", "Ospitaletto", "Monteacuto delle Alpi"] and datetimeObject.minute in [15, 45]:
+									pass
+								elif stationName in ["Lago Scaffaiolo", "Lago Scaffaiolo Nivo", "Passo delle Radici", "Sestola", "Pievepelago", "Isola Palanzano", "Lago Paduli", "Frassinoro", "Sassostorno", "Doccia di Fiumalbo", "Ligonchio", "Febbio", "Collagna", "Villa Minozzo", "Ramiseto", "Piandelagotti", "Lago Pratignano", "Civago", "Ospitaletto", "Monteacuto delle Alpi"] and datetimeObject.minute == 0 and datetimeObject.hour == 0:
+									pass
+								elif stationName in ["Succiso"]:
+									pass
+								else:
+									raise Exception(f"Instantaneous data are none. Station name: {stationName}")
+							else:
+								# per cambiamenti dell'API future
+								if stationName in ["Lago Scaffaiolo", "Passo delle Radici", "Sestola", "Pievepelago", "Isola Palanzano", "Lago Paduli", "Frassinoro", "Sassostorno", "Doccia di Fiumalbo", "Ligonchio", "Febbio", "Collagna", "Villa Minozzo", "Ramiseto", "Piandelagotti", "Lago Pratignano", "Civago", "Ospitaletto", "Monteacuto delle Alpi"] and datetimeObject.minute in [15, 45]:
+									logger.record(msg= f"{stationName.upper()} HA INVIATO DATI INSTANTANETI PER LA PRIMA VOLTA AI 15 O 45!!!!!!!!!!!. Record: {jsonRecord}", logLevel= diagnostic.INFO, module= MODULE)
+								elif stationName in ["Lago Scaffaiolo", "Lago Scaffaiolo Nivo", "Passo delle Radici", "Sestola", "Pievepelago", "Isola Palanzano", "Lago Paduli", "Frassinoro", "Sassostorno", "Doccia di Fiumalbo", "Ligonchio", "Febbio", "Collagna", "Villa Minozzo", "Ramiseto", "Piandelagotti", "Lago Pratignano", "Civago", "Ospitaletto", "Monteacuto delle Alpi"] and datetimeObject.minute == 0 and datetimeObject.hour == 0:
+									logger.record(msg= f"{stationName.upper()} HA INVIATO DATI INSTANTANETI PER LA PRIMA VOLTA A MEZZANOTTE!!!!!!!!!!!. Record: {jsonRecord}", logLevel= diagnostic.INFO, module= MODULE)
+								elif stationName in ["Succiso"]:
+									logger.record(msg= f"{stationName.upper()} HA INVIATO DATI INSTANTANETI PER LA PRIMA VOLTA!!!!!!!!!!!. Record: {jsonRecord}", logLevel= diagnostic.INFO, module= MODULE)
+						except Exception as e:
+							logger.record(msg= f"Error while checking instantaneous data. Record: {jsonRecord}", logLevel= diagnostic.ERROR, module= MODULE, exc= e)
+							saveInstantaneousData = False
+
+						if saveAccumulationData == True:
+							db.storePeriodicDataRecords([{"StationName": stationName, "StartTimestamp": startTimestamp, "EndTimestamp": accumulationData["EndTimestamp"], "Precipitation": accumulationData["Precipitation"]}])
+							periodicRowAdded += 1
+
+						if saveInstantaneousData == True:
 							db.storeInstantaneousDataRecords([{"StationName": stationName, "Timestamp": startTimestamp, "Temperature": instantaneousData["Temperature"], "Humidity": instantaneousData["Humidity"], "WindDirection": instantaneousData["WindDirection"], "WindSpeed": instantaneousData["WindSpeed"]}])
-							# per il futuro
-							if stationName in ["Lago Scaffaiolo", "Passo delle Radici", "Sestola", "Pievepelago", "Succiso", "Isola Palanzano", "Lago Paduli", "Frassinoro", "Sassostorno", "Doccia di Fiumalbo", "Ligonchio", "Febbio", "Collagna", "Villa Minozzo", "Ramiseto", "Piandelagotti", "Lago Pratignano", "Civago", "Ospitaletto", "Monteacuto delle Alpi"] and datetimeObject.minute in [15, 45]:
-								logger.record(msg= f"{stationName.upper()} HA INVIATO DATI AI MINUTI 15 O 45 LA PRIMA VOLTA!!!!!!!!!!!. Record: {record}", logLevel= diagnostic.INFO, module= MODULE)
-						elif stationName in ["Lago Scaffaiolo", "Passo delle Radici", "Sestola", "Pievepelago", "Succiso", "Isola Palanzano", "Lago Paduli", "Frassinoro", "Sassostorno", "Doccia di Fiumalbo", "Ligonchio", "Febbio", "Collagna", "Villa Minozzo", "Ramiseto", "Piandelagotti", "Lago Pratignano", "Civago", "Ospitaletto", "Monteacuto delle Alpi"] and datetimeObject.minute in [15, 45]:
-							pass
-						else:
-							raise Exception(f"Instantaneous data are none. Station name: {stationName}. Line: {record}")
+							instantaneousRowAdded += 1
 
 						db.updateLastUpdateOfStationRecords([{"Name": stationName, "LastUpdate": startTimestamp}])
 
 					except Exception as e:
-						logger.record(msg= f"Error while parsing data record. Record: {record}", logLevel= diagnostic.ERROR, module= MODULE, exc= e)
+						logger.record(msg= f"Error while parsing data record. Record: {jsonRecord}", logLevel= diagnostic.ERROR, module= MODULE, exc= e)
 						continue
 			else:
 				logger.record(msg= f"Impossible to request data. Status code: {req.status_code}. Text: {req.text}", logLevel= diagnostic.ERROR, module= MODULE)
 		except Exception as e:
 			logger.record(msg= f"Error while fetching data", logLevel= diagnostic.CRITICAL, module= MODULE, exc= e)
 
-		logger.record(msg= f"FINE PROCESSO {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", logLevel= diagnostic.INFO, module= MODULE)
+		logger.record(msg= f"FINE PROCESSO {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}. Periodic row added: {periodicRowAdded}. Instantaneous row added: {instantaneousRowAdded}", logLevel= diagnostic.INFO, module= MODULE)
 
 if __name__ == "__main__":
 	# Install python packages

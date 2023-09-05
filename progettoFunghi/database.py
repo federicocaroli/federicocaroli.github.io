@@ -85,10 +85,15 @@ class DatabaseHandler:
 					WindSpeed DOUBLE,\
 					CONSTRAINT instantaneousDataStationNameForeign FOREIGN KEY(StationName) REFERENCES STATION(Name) ON DELETE CASCADE,\
 					CONSTRAINT instantaneousDataRecordPK PRIMARY KEY(StationName, Timestamp))"
-					
+			
+			userTableCreationQuery = f"CREATE TABLE IF NOT EXISTS USER(\
+					Username VARCHAR(255) NOT NULL PRIMARY KEY,\
+					Password VARCHAR(64) NOT NULL,\
+					AuthLevel SMALLINT NOT NULL,\
+					CONSTRAINT user_check_auth_level CHECK(AuthLevel >= 0))"
 
 			conn, cur = self._getConnectionWithDatabase()
-			for query in [stationTableCreationQuery, periodicDataTableCreationQuery, instantaneousDataTableCreationQuery]:
+			for query in [stationTableCreationQuery, periodicDataTableCreationQuery, instantaneousDataTableCreationQuery, userTableCreationQuery]:
 				cur.execute(query)
 
 			cur.close()

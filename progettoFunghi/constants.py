@@ -32,3 +32,9 @@ class STATION_CODES(_AbstractEnum):
 	LATITUDE = "B05001"
 	LONGITUDE = "B06001"
 	ALTITUDE = "B07030"
+
+class TOSCANA_DATA_HTTP_KEYS(_AbstractEnum):
+	PRECIPIATION = "pluvio"
+	TEMPERATURE = "termo"
+	WIND = "anemo"
+	UMIDITY = "igro"

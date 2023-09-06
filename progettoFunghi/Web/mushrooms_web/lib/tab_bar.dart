@@ -129,6 +129,7 @@ class _TabbarStationsState extends State<TabbarStations> {
       tabsView.add(
         ListView(
           controller: ScrollController(),
+          
           children: stationColumnWidgets
         )
       );

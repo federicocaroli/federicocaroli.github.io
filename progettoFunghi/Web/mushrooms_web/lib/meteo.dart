@@ -47,11 +47,17 @@ class _MeteoPagePageState extends State<MeteoPage> {
 		return Scaffold(
 			body: Column(
 				children: <Widget>[
-            Row(
-              children: [
-                Container(
+            Container(
+              decoration: const BoxDecoration(
+                border: Border.symmetric(horizontal: BorderSide(color: Colors.black)),
+              ),
+              height: MediaQuery.of(context).size.height * 0.1,
+              width: MediaQuery.of(context).size.width,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                children: [
+                  Container(
                   padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
-						      height: 70,
                   width: 320,
 						      child:
                     TextField(
@@ -98,7 +104,6 @@ class _MeteoPagePageState extends State<MeteoPage> {
                 ),
                 Container(
                   padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
-                  height: 70,
                   width: 500,
                   child: DropDownMultiSelect(
                       options: availableStations,
@@ -113,7 +118,6 @@ class _MeteoPagePageState extends State<MeteoPage> {
                 ),
                 Container(
                   padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
-                  height: 70,
                   width: 250,
                   child: TextButton(
                     style: ButtonStyle(
@@ -133,7 +137,8 @@ class _MeteoPagePageState extends State<MeteoPage> {
                     child: const Text("Cerca", style: TextStyle(color: Colors.white, fontSize: 20))
                   )
                 )
-              ]
+                ]
+              ),
             ),
             Expanded(
               child: TabbarStations(stationsData: stationsData),

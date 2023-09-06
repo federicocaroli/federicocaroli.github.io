@@ -72,78 +72,80 @@ class _SignUpFormState extends State<SignUpForm> {
 	Widget build(BuildContext context) {
 		return Scaffold(
 			backgroundColor: Colors.white,
-			body: Column(
-				mainAxisSize: MainAxisSize.min,
-				children: [
-					Padding(
-						padding: const EdgeInsets.fromLTRB(0,50,0,50),
-						child: Center(
-							child: Container(
-									width: 500,
-									height: 250,
-									decoration: BoxDecoration(
-										color: Colors.lightGreen,
-										borderRadius: BorderRadius.circular(40.0)
-									),
-									child: Image.asset('assets/images/logo.jpeg', scale: 0.5)),
-						),
-					),
-					Padding(
-						padding: const EdgeInsets.all(8),
-						child: TextField(
-							controller: _usernameTextController,
-							decoration: const InputDecoration(hintText: 'Username'),
-						),
-					),
-					Padding(
-						padding: const EdgeInsets.all(8),
-						child: TextField(
-							obscureText: true,
-							controller: _passwordTextController,
-							decoration: const InputDecoration(hintText: 'Password'),
-						),
-					),
-					Padding(
-						padding: const EdgeInsets.only(top: 10),
-						child: Container(
-							height: 50,
-							width: 250,
-							decoration: BoxDecoration(
-									color: Colors.lightGreen, borderRadius: BorderRadius.circular(20)),
-							child: TextButton(
-								onPressed: () async {
-                  try {
-                    String token = await Server.checkCredential(_usernameTextController.text, _passwordTextController.text);
-                    if (token != ""){
-                      setError("");
-                      if(mounted){
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage(username: _usernameTextController.text, token: token)));
+			body: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(0,50,0,50),
+              child: Center(
+                child: Container(
+                    width: 500,
+                    height: 250,
+                    decoration: BoxDecoration(
+                      color: Colors.lightGreen,
+                      borderRadius: BorderRadius.circular(40.0)
+                    ),
+                    child: Image.asset('assets/images/logo.jpeg', scale: 0.5)),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: TextField(
+                controller: _usernameTextController,
+                decoration: const InputDecoration(hintText: 'Username'),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: TextField(
+                obscureText: true,
+                controller: _passwordTextController,
+                decoration: const InputDecoration(hintText: 'Password'),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 10),
+              child: Container(
+                height: 50,
+                width: 250,
+                decoration: BoxDecoration(
+                    color: Colors.lightGreen, borderRadius: BorderRadius.circular(20)),
+                child: TextButton(
+                  onPressed: () async {
+                    try {
+                      String token = await Server.checkCredential(_usernameTextController.text, _passwordTextController.text);
+                      if (token != ""){
+                        setError("");
+                        if(mounted){
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage(username: _usernameTextController.text, token: token)));
+                        }
+                      }
+                      else{
+                        setError("Credenziali errate");
                       }
                     }
-                    else{
-  										setError("Credenziali errate");
+                    catch(err){
+                      setError("Errore sconosciuto. $err");
                     }
-                  }
-                  catch(err){
-                    setError("Errore sconosciuto. $err");
-                  }
-								},
-								child: const Text(
-									'Login',
-									style: TextStyle(color: Colors.white, fontSize: 25),
-								),
-							),
-						)
-					),
-					Align(
-						alignment: Alignment.centerRight,
-						child:Padding(
-							padding: const EdgeInsets.only(top: 15),
-							child: Text(_error, style: const TextStyle(color: Colors.red))
-						)
-					)
-				]
-			),
+                  },
+                  child: const Text(
+                    'Login',
+                    style: TextStyle(color: Colors.white, fontSize: 25),
+                  ),
+                ),
+              )
+            ),
+            Align(
+              alignment: Alignment.centerRight,
+              child:Padding(
+                padding: const EdgeInsets.only(top: 15),
+                child: Text(_error, style: const TextStyle(color: Colors.red))
+              )
+            )
+          ]
+        )
+      ),
 		);
 	}
 }

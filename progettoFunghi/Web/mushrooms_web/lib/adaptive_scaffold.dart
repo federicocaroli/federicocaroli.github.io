@@ -105,8 +105,9 @@ class _AdaptiveScaffoldState extends State<AdaptiveScaffold> {
 		if (_isMediumScreen(context)) {
 			return Scaffold(
 				appBar: AppBar(
-					title: widget.title,
+				  title: const Text("MushroomsWeb", style: TextStyle(color: Colors.black)),
 					actions: widget.actions,
+          backgroundColor: Colors.lightGreen,
 				),
 				body: Row(
 					children: [
@@ -140,8 +141,9 @@ class _AdaptiveScaffoldState extends State<AdaptiveScaffold> {
 		return Scaffold(
 			body: widget.body,
 			appBar: AppBar(
-				title: widget.title,
+				title: const Text("MushroomsWeb", style: TextStyle(color: Colors.black)),
 				actions: widget.actions,
+        backgroundColor: Colors.lightGreen,
 			),
 			bottomNavigationBar: BottomNavigationBar(
 				items: [

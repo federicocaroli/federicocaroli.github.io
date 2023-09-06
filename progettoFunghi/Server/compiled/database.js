@@ -44,7 +44,7 @@ class MariaDBHandler {
                     }
                 }
                 catch (err) {
-                    reject(new Error(`Database authenticate_user method: ${err}`));
+                    reject(new Error(`Database authenticate_user method. ${err}`));
                     return;
                 }
                 resolve(auth_level);
@@ -62,7 +62,7 @@ class MariaDBHandler {
                     }
                 }
                 catch (err) {
-                    reject(new Error(`Database get_stations method: ${err}`));
+                    reject(new Error(`Database get_stations method. ${err}`));
                     return;
                 }
                 resolve(result);
@@ -79,7 +79,7 @@ class MariaDBHandler {
                     }
                 }
                 catch (err) {
-                    reject(new Error(`Database get_sum_precipitation_of_station_in_period method: ${err}`));
+                    reject(new Error(`Database get_sum_precipitation_of_station_in_period method. ${err}`));
                     return;
                 }
                 resolve(null);
@@ -100,7 +100,7 @@ class MariaDBHandler {
                     }
                 }
                 catch (err) {
-                    reject(new Error(`Database get_average_instantaneous_data_of_station_in_period method: ${err}`));
+                    reject(new Error(`Database get_average_instantaneous_data_of_station_in_period method. ${err}`));
                     return;
                 }
                 resolve(result);
@@ -119,7 +119,7 @@ class MariaDBHandler {
                     }
                 }
                 catch (err) {
-                    reject(new Error(`Database get_max_min_temperature_of_station_in_period method: ${err}`));
+                    reject(new Error(`Database get_max_min_temperature_of_station_in_period method. ${err}`));
                     return;
                 }
                 resolve(result);
@@ -133,7 +133,7 @@ class MariaDBHandler {
                     yield pool.end();
                 }
                 catch (err) {
-                    reject(new Error(`Database close method: ${err}`));
+                    reject(new Error(`Database close method. ${err}`));
                     return;
                 }
                 resolve();

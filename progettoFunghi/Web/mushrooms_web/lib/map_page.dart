@@ -41,47 +41,49 @@ class _MapPagePageState extends State<MapPage> {
     );
 
     Server.getStationsInfo(widget.username, widget.token).then((stations) {
-      setState(() {
-        for (final station in stations.keys){
-          var lastUpdateDatetime = DateTime.fromMillisecondsSinceEpoch(int.parse(stations[station]!['lastUpdate']) * 1000);
-          var lastUpdateString = DateFormat('dd/MM/yyyy HH:mm').format(lastUpdateDatetime);
-          _listViewChildren.add(
-            Card(
-              child: ListTile(
-                title: Text("$station. Altitudine: ${stations[station]!['altitude']} m. Ultimo aggiornamento: $lastUpdateString"),
-                onTap: (){
-                  moveCenterOfMap(stations[station]!["latitude"], stations[station]!["longitude"]);
-                  if (mounted){
-                    setState(() {
-                      _layers.clear();
-                      _layers.add(
-                        TileLayer(
-                          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                          userAgentPackageName: 'com.example.app',
-                        )
-                      );
-                      _layers.add(
-                        CircleLayer(
-                          circles: [
-                            CircleMarker(
-                              point: LatLng(stations[station]!["latitude"], stations[station]!["longitude"]),
-                              color: Colors.red.withOpacity(0.7),
-                              borderColor: Colors.black,
-                              borderStrokeWidth: 2,
-                              radius: 300,
-                              useRadiusInMeter: true,
-                            ),
-                          ],
-                        ),
-                      );
-                    });
-                  }
-                },
+      if(mounted){
+        setState(() {
+          for (final station in stations.keys){
+            var lastUpdateDatetime = DateTime.fromMillisecondsSinceEpoch(int.parse(stations[station]!['lastUpdate']) * 1000);
+            var lastUpdateString = DateFormat('dd/MM/yyyy HH:mm').format(lastUpdateDatetime);
+            _listViewChildren.add(
+              Card(
+                child: ListTile(
+                  title: Text("$station. Altitudine: ${stations[station]!['altitude']} m. Ultimo aggiornamento: $lastUpdateString"),
+                  onTap: (){
+                    moveCenterOfMap(stations[station]!["latitude"], stations[station]!["longitude"]);
+                    if (mounted){
+                      setState(() {
+                        _layers.clear();
+                        _layers.add(
+                          TileLayer(
+                            urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                            userAgentPackageName: 'com.example.app',
+                          )
+                        );
+                        _layers.add(
+                          CircleLayer(
+                            circles: [
+                              CircleMarker(
+                                point: LatLng(stations[station]!["latitude"], stations[station]!["longitude"]),
+                                color: Colors.red.withOpacity(0.7),
+                                borderColor: Colors.black,
+                                borderStrokeWidth: 2,
+                                radius: 300,
+                                useRadiusInMeter: true,
+                              ),
+                            ],
+                          ),
+                        );
+                      });
+                    }
+                  },
+                ),
               ),
-            ),
-          );
-        }
-      });
+            );
+          }
+        });
+      }
     }).catchError((err){
       print(err);
     });

@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 
 import 'adaptive_scaffold.dart';
 import 'meteo.dart';
-import 'mapPage.dart';
+import 'map_page.dart';
 
 class HomePage extends StatefulWidget {
 	final String username;

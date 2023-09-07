@@ -20,6 +20,7 @@ class MariaDBHandler {
             user: this.user,
             password: this.password,
             database: this.database,
+            port: 3306,
             connectionLimit: 10
         });
 	}

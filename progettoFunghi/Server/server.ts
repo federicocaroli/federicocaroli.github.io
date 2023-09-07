@@ -5,9 +5,9 @@ import {MariaDBHandler} from "./database";
 
 // Create the PostgreSQL handler
 var dbHandler = new MariaDBHandler(
-	"localhost",
+	"127.0.0.1",
 	"root",
-	"MartinaFederico1vs1!",
+	"Vialedellapace14!",
 	"Mushrooms"
 );
 
@@ -421,7 +421,7 @@ mushroomServer.post('/get_data_of_stations', parser, async (req: Request, res: R
 })
 
 try {
-	var handler = mushroomServer.listen(serverPort, async () => {
+	var handler = mushroomServer.listen(serverPort, "localhost", async () => {
 		console.log("Mushrooms HTTP Server started");
 	});
 

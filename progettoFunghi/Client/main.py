@@ -439,6 +439,6 @@ if __name__ == "__main__":
 	logging.getLogger("requests").setLevel(logging.WARNING)
 
 	db = database.DatabaseHandler(logger= logger)
-	db.open(host= "127.0.0.1", username= "root", password= "MartinaFederico1vs1!", port= 3306, databaseName= "Mushrooms", connectionsPoolName= "MSR", numberOfConnectionsInPool= 20)
+	db.open(host= "127.0.0.1", username= "root", password= "Vialedellapace14!", port= 3306, databaseName= "Mushrooms", connectionsPoolName= "MSR", numberOfConnectionsInPool= 20)
 
 	main(logger= logger, db= db)

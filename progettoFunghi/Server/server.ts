@@ -251,8 +251,6 @@ mushroomServer.post('/get_data_of_stations', parser, async (req: Request, res: R
 		let endDate: Date = new Date(endTimestamp * 1000);
 		let endDayTimestamp = Math.round(new Date(`${endDate.getFullYear()}-${endDate.getMonth() + 1}-${endDate.getDate()} 00:00:00`).getTime() / 1000);
 
-		console.log(`startTimestamp: ${startTimestamp}, endTimestamp: ${endTimestamp}, startDayTimestamp: ${startDayTimestamp}, endDayTimestamp: ${endDayTimestamp}`);
-
 		let payload: any = {};
 		let divider: number = 24 * 3600;
 

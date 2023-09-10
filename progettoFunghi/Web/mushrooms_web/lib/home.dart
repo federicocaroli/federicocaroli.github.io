@@ -7,14 +7,11 @@ import 'package:flutter/material.dart';
 import 'adaptive_scaffold.dart';
 import 'meteo.dart';
 import 'map_page.dart';
+import 'server.dart';
+import 'info_page.dart';
 
 class HomePage extends StatefulWidget {
-	final String username;
-  final String token;
-
 	const HomePage({
-		required this.username,
-		required this.token,
 		super.key,
 	});
 
@@ -53,14 +50,16 @@ class _HomePageState extends State<HomePage> {
 			currentIndex: _pageIndex,
 			destinations: const [
 				AdaptiveScaffoldDestination(title: 'Home', icon: Icons.home),
+        AdaptiveScaffoldDestination(title: 'Dati', icon: Icons.dataset_outlined),
         AdaptiveScaffoldDestination(title: 'Mappa', icon: Icons.map),
-        AdaptiveScaffoldDestination(title: 'Prova2', icon: Icons.home),
 			],
 			body: _pageAtIndex(_pageIndex),
 			onNavigationIndexChange: (newIndex) {
-				setState(() {
-					_pageIndex = newIndex;
-				});
+        if(mounted){
+          setState(() {
+            _pageIndex = newIndex;
+          });
+        }
 			},
 		);
 	}
@@ -80,6 +79,7 @@ class _HomePageState extends State<HomePage> {
 					TextButton(
 						child: const Text('Sì'),
 						onPressed: () {
+              Server.signOut();
 							Navigator.of(context).pop(true);
 						},
 					),
@@ -97,11 +97,14 @@ class _HomePageState extends State<HomePage> {
 	}
 
 	Widget _pageAtIndex(int index) {
-		if (index == 0) {
-			return MeteoPage(username: widget.username, token: widget.token);
+		if (index == 0){
+      return InfoPage();
+    }
+    else if (index == 1) {
+			return MeteoPage();
 		}
-    else if(index == 1){
-      return MapPage(username: widget.username, token: widget.token);
+    else if(index == 2){
+      return MapPage();
     }
 		else{
 			return const Center(child: Text('Unknown Page'));

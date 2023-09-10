@@ -61,15 +61,55 @@ class _SignUpFormState extends State<SignUpForm> {
 	final _usernameTextController = TextEditingController();
 	final _passwordTextController = TextEditingController();
 	String _error = "";
+  bool authWithCookie = true;
 
 	void setError(String msg){
-		setState(() {
-			_error = msg;
-		});
+		if(mounted){
+      setState(() {
+        _error = msg;
+      });
+    }
 	}
+
+  @override
+  void dispose(){
+    _usernameTextController.dispose();
+    _passwordTextController.dispose();
+    super.dispose();
+  }
 
 	@override
 	Widget build(BuildContext context) {
+    
+    if (authWithCookie){
+      Server.renewCookie().then<void>((result){
+        if (result){
+          Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
+        }
+        else{
+          if (mounted){
+            setState(() {
+              authWithCookie = false;
+            });
+          }
+        }
+      }).catchError((error){
+        if (error is AuthenticationException){
+          Server.signOut();
+        }
+        else {
+          setError("Errore sconosciuto durante accesso con cookie. $error");
+          print(error);
+        }
+        if (mounted){
+          setState(() {
+            authWithCookie = false;
+          });
+        }
+      });
+    }
+    
+
 		return Scaffold(
 			backgroundColor: Colors.white,
 			body: SingleChildScrollView(
@@ -114,16 +154,19 @@ class _SignUpFormState extends State<SignUpForm> {
                 child: TextButton(
                   onPressed: () async {
                     try {
-                      String token = await Server.checkCredential(_usernameTextController.text, _passwordTextController.text);
-                      if (token != ""){
+                      bool result = await Server.checkCredential(_usernameTextController.text, _passwordTextController.text);
+                      if (result){
                         setError("");
                         if(mounted){
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage(username: _usernameTextController.text, token: token)));
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => const HomePage()));
                         }
                       }
                       else{
                         setError("Credenziali errate");
                       }
+                    }
+                    on AuthenticationException {
+                      setError("Credenziali errate");
                     }
                     catch(err){
                       setError("Errore sconosciuto. $err");

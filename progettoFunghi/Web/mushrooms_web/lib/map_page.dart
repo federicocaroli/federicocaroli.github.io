@@ -6,12 +6,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'server.dart';
 
 class MapPage extends StatefulWidget {
-  final String username;
-  final String token;
-	
   const MapPage({
-		required this.username,
-    required this.token,
     super.key
 	});
 
@@ -26,6 +21,7 @@ class _MapPagePageState extends State<MapPage> {
   final List<Widget> _layers = [];
   double _latitude = 44.267946, _longitude = 10.503911, _zoom = 12;
   final double _maxZoom = 18, _minZoom = 1;
+  Widget loadingWidget = const Center(child: CircularProgressIndicator());
 
 	@override
 	void initState() {
@@ -40,16 +36,29 @@ class _MapPagePageState extends State<MapPage> {
       )
     );
 
-    Server.getStationsInfo(widget.username, widget.token).then((stations) {
+    Server.getStationsInfo().then<void>((stations) {
       if(mounted){
         setState(() {
           for (final station in stations.keys){
             var lastUpdateDatetime = DateTime.fromMillisecondsSinceEpoch(int.parse(stations[station]!['lastUpdate']) * 1000);
             var lastUpdateString = DateFormat('dd/MM/yyyy HH:mm').format(lastUpdateDatetime);
+            var sensorsString = "";
+
+            for (final sensor in stations[station]!['sensors']) {
+              sensorsString += "$sensor, ";
+            }
+
+            if (sensorsString.isNotEmpty){
+              sensorsString = sensorsString.substring(0, sensorsString.length - 2);
+            }
+            else{
+              sensorsString = "Nessun sensore disponibile";
+            }
+
             _listViewChildren.add(
               Card(
                 child: ListTile(
-                  title: Text("$station. Altitudine: ${stations[station]!['altitude']} m. Ultimo aggiornamento: $lastUpdateString"),
+                  title: Text("$station. Altitudine: ${stations[station]!['altitude']} m. Ultimo aggiornamento: $lastUpdateString. Sensori: $sensorsString"),
                   onTap: (){
                     moveCenterOfMap(stations[station]!["latitude"], stations[station]!["longitude"]);
                     if (mounted){
@@ -82,12 +91,58 @@ class _MapPagePageState extends State<MapPage> {
               ),
             );
           }
+
+          loadingWidget = ListView(
+            scrollDirection: Axis.vertical,
+            children: [
+              ..._listViewChildren
+            ],
+          );
         });
       }
-    }).catchError((err){
-      print(err);
+    }).catchError((error) async {
+      if (error is AuthenticationException){
+        Server.signOut();
+        await showDialog(context: context, 
+        builder: (BuildContext context){
+          return AlertDialog(
+            title: const Text('Attenzione'),
+            content: const Text(
+              'Login scaduto. Effettuare nuovamente il login.'
+            ),
+            actions: <Widget>[
+              TextButton(
+                style: TextButton.styleFrom(
+                  textStyle: Theme.of(context).textTheme.labelLarge,
+                ),
+                child: const Text('OK'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              )
+            ],
+          );
+        });
+        if(mounted){
+          Navigator.pushNamedAndRemoveUntil(context, '/', (Route<dynamic> route) => false);
+        }
+      }
+      else{
+        if (mounted){
+          setState(() {
+            loadingWidget = const Center(child: Text("Errore sconosciuto durante il caricamento delle stazioni."));
+          });
+        }
+        print(error);
+      }
     });
 	}
+
+  @override
+  void dispose(){
+    _mapController.dispose();
+    super.dispose();
+  }
 
   void moveCenterOfMap(double latitude, double longitude) {
     _latitude = latitude;
@@ -165,12 +220,7 @@ class _MapPagePageState extends State<MapPage> {
               )
             ),
             Expanded(
-              child: ListView(
-                scrollDirection: Axis.vertical,
-                children: [
-                  ..._listViewChildren
-                ],
-              ),
+              child: loadingWidget
             )
           ]
         )

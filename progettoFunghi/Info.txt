@@ -29,3 +29,7 @@ Ramiseto Precipitazioni, temperatura
 Monteacuto delle Alpi Precipitazioni, temperatura
 Piandelagotti Precipitazioni, temperatura
 Lago Pratignano Precipitazioni, temperatura
+
+
+Pioggia --> pioggia debole (1 – 2 mm/h), pioggia leggera (2 – 4 mm/h), pioggia moderata (4 – 6 mm/h), pioggia forte (> 6 mm/h), rovescio (> 10 mm/h), nubifragio (> 30 mm/h)
+Vel. vento --> calmo (0 km/h - 5 km/h), Debole (6 km/h - 19 km/h), Moderato (20 km/h - 38 km/h), Forte (39 km/h - 61 km/h), Burrasca (62 km/h - 88 km/h), Tempesta (> 89 km/h)

@@ -5,12 +5,7 @@ import 'server.dart';
 import 'tab_bar.dart';
 
 class MeteoPage extends StatefulWidget {
-  final String username;
-  final String token;
-	
   const MeteoPage({
-		required this.username,
-    required this.token,
     super.key
 	});
 
@@ -33,14 +28,70 @@ class _MeteoPagePageState extends State<MeteoPage> {
 		startTimestamp = (DateTime.now().millisecondsSinceEpoch/1000).round();
 		endTimestamp = (DateTime.now().millisecondsSinceEpoch/1000).round() + 86400;
 		dateInput.text = 'Da ${DateFormat('dd/MM/yyyy').format(DateTime.now())} a ${DateFormat('dd/MM/yyyy').format(DateTime.now())}'; //set the initial value of text field
-    Server.getStationsInfo(widget.username, widget.token).then((result) {
-      setState(() {
-        availableStations = result.keys.toList();
-      });
-    }).catchError((err){
-      print(err);
+    Server.getStationsInfo().then<void>((result) {
+      if (mounted){
+        setState(() {
+          availableStations = result.keys.toList();
+        });
+      }
+    }).catchError((error) async {
+      if (error is AuthenticationException){
+        Server.signOut();
+        await showDialog(context: context, 
+        builder: (BuildContext context){
+          return AlertDialog(
+            title: const Text('Attenzione'),
+            content: const Text(
+              'Login scaduto. Effettuare nuovamente il login.'
+            ),
+            actions: <Widget>[
+              TextButton(
+                style: TextButton.styleFrom(
+                  textStyle: Theme.of(context).textTheme.labelLarge,
+                ),
+                child: const Text('OK'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              )
+            ],
+          );
+        });
+        if(mounted){
+          Navigator.pushNamedAndRemoveUntil(context, '/', (Route<dynamic> route) => false);
+        }
+      }
+      else{
+        print(error);
+        await showDialog(context: context, 
+        builder: (BuildContext context){
+          return AlertDialog(
+            title: const Text('Attenzione'),
+            content: const Text(
+              'Errore sconosciuto durante il caricamento delle stazioni.'
+            ),
+            actions: <Widget>[
+              TextButton(
+                style: TextButton.styleFrom(
+                  textStyle: Theme.of(context).textTheme.labelLarge,
+                ),
+                child: const Text('OK'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              )
+            ],
+          );
+        });
+      }
     });
 	}
+
+  @override
+  void dispose(){
+    dateInput.dispose();
+    super.dispose();
+  }
 
 	@override
 	Widget build(BuildContext context) {
@@ -93,11 +144,13 @@ class _MeteoPagePageState extends State<MeteoPage> {
 
                         if (pickedPeriod != null && startTimestamp != (pickedPeriod.start.millisecondsSinceEpoch/1000).round() && endTimestamp != ((pickedPeriod.end.millisecondsSinceEpoch/1000).round() + 86400)) {
                           String formattedDate = 'Da ${DateFormat('dd/MM/yyyy').format(pickedPeriod.start)} a ${DateFormat('dd/MM/yyyy').format(pickedPeriod.end)}';
-                          setState(() {
-                            dateInput.text = formattedDate;
-                            startTimestamp = (pickedPeriod.start.millisecondsSinceEpoch/1000).round();
-                            endTimestamp = (pickedPeriod.end.millisecondsSinceEpoch/1000).round() + 86400;
-                          });
+                          if (mounted){
+                            setState(() {
+                              dateInput.text = formattedDate;
+                              startTimestamp = (pickedPeriod.start.millisecondsSinceEpoch/1000).round();
+                              endTimestamp = (pickedPeriod.end.millisecondsSinceEpoch/1000).round() + 86400;
+                            });
+                          }
                         } 
                       }
                     )
@@ -109,9 +162,11 @@ class _MeteoPagePageState extends State<MeteoPage> {
                       options: availableStations,
                       selectedValues: selectedStations,
                       onChanged: (list){
-                        setState(() {
-                          selectedStations = list;
-                        });
+                        if (mounted){
+                          setState(() {
+                            selectedStations = list;
+                          });
+                        }
                       },
                       whenEmpty: 'Seleziona le stazioni',
                     ),
@@ -125,12 +180,62 @@ class _MeteoPagePageState extends State<MeteoPage> {
                     ),
                     onPressed: (){
                       if (selectedStations.isNotEmpty){
-                        Server.getStationsData(widget.username, widget.token, startTimestamp, endTimestamp, selectedStations).then((result) {
-                          setState(() {
-                            stationsData = result;
-                          });
-                        }).catchError((err){
-                          print(err);
+                        Server.getStationsData(startTimestamp, endTimestamp, selectedStations).then((result) {
+                          if (mounted){
+                            setState(() {
+                              stationsData = result;
+                            });
+                          }
+                        }).catchError((error) async {
+                          if (error is AuthenticationException){
+                            Server.signOut();
+                            await showDialog(context: context, 
+                            builder: (BuildContext context){
+                              return AlertDialog(
+                                title: const Text('Attenzione'),
+                                content: const Text(
+                                  'Login scaduto. Effettuare nuovamente il login.'
+                                ),
+                                actions: <Widget>[
+                                  TextButton(
+                                    style: TextButton.styleFrom(
+                                      textStyle: Theme.of(context).textTheme.labelLarge,
+                                    ),
+                                    child: const Text('OK'),
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                  )
+                                ],
+                              );
+                            });
+                            if(mounted){
+                              Navigator.pushNamedAndRemoveUntil(context, '/', (Route<dynamic> route) => false);
+                            }
+                          }
+                          else{
+                            print(error);
+                            await showDialog(context: context, 
+                            builder: (BuildContext context){
+                              return AlertDialog(
+                                title: const Text('Attenzione'),
+                                content: const Text(
+                                  'Errore scoccuro durante il caricamento dei dati.'
+                                ),
+                                actions: <Widget>[
+                                  TextButton(
+                                    style: TextButton.styleFrom(
+                                      textStyle: Theme.of(context).textTheme.labelLarge,
+                                    ),
+                                    child: const Text('OK'),
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                  )
+                                ],
+                              );
+                            });
+                          }
                         });
                       }
                     },

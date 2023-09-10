@@ -2,6 +2,7 @@ import express, {Request, Response, Express} from 'express';
 import jwt from "jsonwebtoken";
 import cors from "cors";
 import {MariaDBHandler} from "./database";
+import { type } from 'os';
 
 // Create the PostgreSQL handler
 var dbHandler = new MariaDBHandler(
@@ -16,7 +17,7 @@ const mushroomServer: Express = express();
 mushroomServer.use(express.json({limit: '20mb'}));
 mushroomServer.use(cors({}));
 const parser = express.urlencoded({extended: false});
-const serverPort: number = 8000;
+const serverPort: number = 8001;
 
 // Define authentication levels for APIs
 const NO_PRIVILEDGE_REQUIRED: number = 0;
@@ -39,7 +40,7 @@ function issueJwt(username: string, authLevel: number): string {
 	let signOption: {issuer: string, subject: string, expiresIn: string} = {
 		issuer: "Mushrooms",
 		subject: username,
-		expiresIn:  "1h"
+		expiresIn:  "8h"
 	};
 
 	return jwt.sign(payload, jwtSecretKey, signOption);
@@ -53,7 +54,7 @@ function verifyJwt(token: string, username: string) {
 		let verifyOption: {issuer: string, subject: string, expiresIn: string} = {
 			issuer: "Mushrooms",
 			subject: username,
-			expiresIn:  "1h",
+			expiresIn:  "8h",
 		}
 
 		return jwt.verify(token, jwtSecretKey, verifyOption);
@@ -94,6 +95,32 @@ function validateJwt(req: Request, minLevel: number): boolean {
 
 	// Valid JWT
 	return true;
+}
+
+function renewJwt(username: string, token: string): string | null {
+	
+	// Missing auth token
+    if (typeof token !== "string" || typeof username !== "string") {
+        return null;
+    }
+
+	let jwtPayload: any = verifyJwt(token, username);
+
+	// Check if the token is valid
+	if (jwtPayload === null) {
+		return null;
+	}
+	else if (isObject(jwtPayload) === false) {
+		return null;
+	}
+	else if (jwtPayload.hasOwnProperty("authLevel") === false) {
+		return null;
+	}
+	else if (Number.isInteger(jwtPayload["authLevel"]) === false) {
+		return null;
+	}
+
+	return issueJwt(username, jwtPayload["authLevel"]);
 }
 
 function errorOccurred(message: string, res: Response, resMessage: string = ""){
@@ -173,13 +200,15 @@ mushroomServer.post('/get_stations', parser, async (req: Request, res: Response)
 	}
 	
 	try{
-        let result: Map<number, {latitude: number, longitude: number, altitude: number, lastUpdate: number}> = await dbHandler.get_stations();
-        let payload: any = {};
+        let result: Map<string, {latitude: number, longitude: number, altitude: number, lastUpdate: number}> = await dbHandler.get_stations();
+		let payload: any = {};
 
         for (let stationName of result.keys()) {
 			let value = result.get(stationName);
+			let sensors: Array<string> = await dbHandler.get_sensors_per_station(stationName);
+
 			if (value !== undefined){
-				payload[stationName] = {latitude: value.latitude, longitude: value.longitude, altitude: value.altitude, lastUpdate: value.lastUpdate.toString()};
+				payload[stationName] = {latitude: value.latitude, longitude: value.longitude, altitude: value.altitude, lastUpdate: value.lastUpdate.toString(), sensors: sensors};
 			}
         }
 		res.status(200).json(payload);
@@ -300,7 +329,7 @@ mushroomServer.post('/get_data_of_stations', parser, async (req: Request, res: R
 						}
 	
 						if (ave_instantaneous["windSpeed"] !== null){
-							dayData[intervalString]["vel. vento"] = (Math.round(ave_instantaneous["windSpeed"] * 10) / 10).toString();
+							dayData[intervalString]["vel. vento"] = (Math.round((ave_instantaneous["windSpeed"] * 3.6) * 10) / 10).toString();
 							windSpeedIsAvailable = true;
 						}
 	
@@ -341,7 +370,7 @@ mushroomServer.post('/get_data_of_stations', parser, async (req: Request, res: R
 				}
 
 				if (ave_instantaneous["windSpeed"] !== null){
-					dayData["tot"]["vel. vento"] = (Math.round(ave_instantaneous["windSpeed"] * 10) / 10).toString();
+					dayData["tot"]["vel. vento"] = (Math.round((ave_instantaneous["windSpeed"] * 3.6) * 10) / 10).toString();
 					windSpeedIsAvailable = true;
 				}
 
@@ -418,8 +447,52 @@ mushroomServer.post('/get_data_of_stations', parser, async (req: Request, res: R
 	}
 })
 
+mushroomServer.post('/renew', parser, async (req: Request, res: Response) => {
+	
+	// Check if an auth token is present
+	try {
+		const requiredFields: string[] = ["username", "token"];
+		
+		let missingRequiredFields: boolean = false;
+
+		requiredFields.forEach((field: string) => {
+			if(!(field in req.body) && missingRequiredFields === false) {
+				res.status(400).end(`Missing required fields! Field: ${field}`);
+				missingRequiredFields = true;
+			}
+		});
+
+        if (missingRequiredFields) {
+            return;
+        }
+
+		if (typeof req.body.username !== "string" || typeof req.body.token !== "string"){
+			res.status(400).end(`Invalid params!`);
+			return;
+		}
+
+	} catch(err) {
+		errorOccurred(`Error while checking JWT check_cookie API\n${err}`, res, "Error while checking JWT check_cookie API");
+		return;
+	}
+	
+	try{
+		let token: string|null = renewJwt(req.body.username, req.body.token);
+		if (token === null){
+			res.status(403).json({reason: "authentication"});
+			return;
+		}
+
+		res.status(200).json({"token": token});
+	}
+	catch(err){
+		errorOccurred(`Error in check_cookie API\n${err}`, res, "Error in check_cookie API");
+	}
+
+});
+
 try {
-	var handler = mushroomServer.listen(serverPort, "localhost", async () => {
+	var handler = mushroomServer.listen(serverPort, async () => {
 		console.log("Mushrooms HTTP Server started");
 	});
 

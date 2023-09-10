@@ -34,7 +34,7 @@ class MariaDBHandler {
                     throw new Error("Invalid username or password. Username or password is not string.");
                 }
                 
-                let resp = await this.pool.query("SELECT AuthLevel FROM USER WHERE Username = ? AND Password = ?", [username, password]);
+                let resp = await this.pool.query("SELECT AuthLevel FROM USER WHERE Username LIKE BINARY ? AND Password LIKE BINARY ?", [username, password]);
 
                 // The user exists
                 if (resp.length > 0) {
@@ -53,9 +53,9 @@ class MariaDBHandler {
 		});
 	}
 
-    async get_stations(): Promise<Map<number, {latitude: number, longitude: number, altitude: number, lastUpdate: number}>> {
+    async get_stations(): Promise<Map<string, {latitude: number, longitude: number, altitude: number, lastUpdate: number}>> {
 		return new Promise(async (resolve, reject) => {
-            let result: Map<number, {latitude: number, longitude: number, altitude: number, lastUpdate: number}> = new Map();
+            let result: Map<string, {latitude: number, longitude: number, altitude: number, lastUpdate: number}> = new Map();
             
             try{                
                 let resp = await this.pool.query("SELECT Name, Latitude, Longitude, Altitude, LastUpdate FROM STATION ORDER BY Name");
@@ -104,6 +104,45 @@ class MariaDBHandler {
                     result.windSpeed = resp[0]["WindSpeed"];
                     result.windDirection = resp[0]["WindDirection"];
                 }                
+            }
+            catch(err) {
+                reject(new Error(`Database get_average_instantaneous_data_of_station_in_period method. ${err}`));
+                return;
+            }
+
+            resolve(result);
+        });
+    }
+
+    async get_sensors_per_station(station: string): Promise<Array<string>> {
+        return new Promise(async (resolve, reject) => {
+            let result: Array<string> = [];
+            
+            try {
+                let resp = await this.pool.query("SELECT AVG(Precipitation) as Precipitation FROM PERIODIC_DATA WHERE StationName = ?", [station]);
+
+                if (resp.length > 0) {
+                    if (resp[0]["Precipitation"] != null) {
+                        result.push("Pioggia");
+                    }
+                }
+
+                resp = await this.pool.query("SELECT AVG(Temperature) as Temperature, AVG(Humidity) as Humidity, AVG(WindSpeed) as WindSpeed, AVG(WindDirection) as WindDirection FROM INSTANTANEOUS_DATA WHERE StationName = ?", [station]);
+
+                if (resp.length > 0) {
+                    if (resp[0]["Temperature"] != null) {
+                        result.push("Temperatura");
+                    }
+                    if (resp[0]["Humidity"] != null) {
+                        result.push("Umidità");
+                    }
+                    if (resp[0]["WindSpeed"] != null) {
+                        result.push("Velocità vento");
+                    }
+                    if (resp[0]["WindDirection"] != null) {
+                        result.push("Direzione vento");
+                    }
+                }
             }
             catch(err) {
                 reject(new Error(`Database get_average_instantaneous_data_of_station_in_period method. ${err}`));

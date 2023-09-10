@@ -17,13 +17,13 @@ const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const cors_1 = __importDefault(require("cors"));
 const database_1 = require("./database");
 // Create the PostgreSQL handler
-var dbHandler = new database_1.MariaDBHandler("localhost", "root", "MartinaFederico1vs1!", "Mushrooms");
+var dbHandler = new database_1.MariaDBHandler("127.0.0.1", "root", "Vialedellapace14!", "Mushrooms");
 // Setup express for API
 const mushroomServer = (0, express_1.default)();
 mushroomServer.use(express_1.default.json({ limit: '20mb' }));
 mushroomServer.use((0, cors_1.default)({}));
 const parser = express_1.default.urlencoded({ extended: false });
-const serverPort = 8000;
+const serverPort = 8001;
 // Define authentication levels for APIs
 const NO_PRIVILEDGE_REQUIRED = 0;
 const USER_LEVEL = 1;
@@ -86,6 +86,27 @@ function validateJwt(req, minLevel) {
     }
     // Valid JWT
     return true;
+}
+function renewJwt(username, token) {
+    // Missing auth token
+    if (typeof token !== "string" || typeof username !== "string") {
+        return null;
+    }
+    let jwtPayload = verifyJwt(token, username);
+    // Check if the token is valid
+    if (jwtPayload === null) {
+        return null;
+    }
+    else if (isObject(jwtPayload) === false) {
+        return null;
+    }
+    else if (jwtPayload.hasOwnProperty("authLevel") === false) {
+        return null;
+    }
+    else if (Number.isInteger(jwtPayload["authLevel"]) === false) {
+        return null;
+    }
+    return issueJwt(username, jwtPayload["authLevel"]);
 }
 function errorOccurred(message, res, resMessage = "") {
     console.log(message);
@@ -215,7 +236,6 @@ mushroomServer.post('/get_data_of_stations', parser, (req, res) => __awaiter(voi
         let startDayTimestamp = Math.round(new Date(`${startDate.getFullYear()}-${startDate.getMonth() + 1}-${startDate.getDate()} 00:00:00`).getTime() / 1000);
         let endDate = new Date(endTimestamp * 1000);
         let endDayTimestamp = Math.round(new Date(`${endDate.getFullYear()}-${endDate.getMonth() + 1}-${endDate.getDate()} 00:00:00`).getTime() / 1000);
-        console.log(`startTimestamp: ${startTimestamp}, endTimestamp: ${endTimestamp}, startDayTimestamp: ${startDayTimestamp}, endDayTimestamp: ${endDayTimestamp}`);
         let payload = {};
         let divider = 24 * 3600;
         if (endTimestamp - startTimestamp <= 86400 * 3) {
@@ -350,6 +370,41 @@ mushroomServer.post('/get_data_of_stations', parser, (req, res) => __awaiter(voi
     }
     catch (err) {
         errorOccurred(`Error in get_data_of_stations API\n${err}`, res, "Error in get_data_of_stations API");
+    }
+}));
+mushroomServer.post('/renew', parser, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    // Check if an auth token is present
+    try {
+        const requiredFields = ["username", "token"];
+        let missingRequiredFields = false;
+        requiredFields.forEach((field) => {
+            if (!(field in req.body) && missingRequiredFields === false) {
+                res.status(400).end(`Missing required fields! Field: ${field}`);
+                missingRequiredFields = true;
+            }
+        });
+        if (missingRequiredFields) {
+            return;
+        }
+        if (typeof req.body.username !== "string" || typeof req.body.token !== "string") {
+            res.status(400).end(`Invalid params!`);
+            return;
+        }
+    }
+    catch (err) {
+        errorOccurred(`Error while checking JWT check_cookie API\n${err}`, res, "Error while checking JWT check_cookie API");
+        return;
+    }
+    try {
+        let token = renewJwt(req.body.username, req.body.token);
+        if (token === null) {
+            res.status(403).json({ reason: "authentication" });
+            return;
+        }
+        res.status(200).json({ "token": token });
+    }
+    catch (err) {
+        errorOccurred(`Error in check_cookie API\n${err}`, res, "Error in check_cookie API");
     }
 }));
 try {

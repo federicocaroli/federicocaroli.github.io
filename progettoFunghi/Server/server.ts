@@ -17,7 +17,7 @@ const mushroomServer: Express = express();
 mushroomServer.use(express.json({limit: '20mb'}));
 mushroomServer.use(cors({}));
 const parser = express.urlencoded({extended: false});
-const serverPort: number = 8001;
+const serverPort: number = 8000;
 
 // Define authentication levels for APIs
 const NO_PRIVILEDGE_REQUIRED: number = 0;
@@ -492,7 +492,7 @@ mushroomServer.post('/renew', parser, async (req: Request, res: Response) => {
 });
 
 try {
-	var handler = mushroomServer.listen(serverPort, async () => {
+	var handler = mushroomServer.listen(serverPort, "localhost", async () => {
 		console.log("Mushrooms HTTP Server started");
 	});
 

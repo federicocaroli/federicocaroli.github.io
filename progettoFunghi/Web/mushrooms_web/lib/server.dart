@@ -10,7 +10,7 @@ class Server {
   
   static final dio = Dio(
     BaseOptions(
-      baseUrl: 'http://192.168.1.177:8001',
+      baseUrl: 'https://famcaroli.ddns.net/server',
       connectTimeout: const Duration(seconds: 5),
       receiveTimeout: const Duration(seconds: 3),
     )

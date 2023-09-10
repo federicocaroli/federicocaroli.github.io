@@ -158,7 +158,7 @@ class _SignUpFormState extends State<SignUpForm> {
                       if (result){
                         setError("");
                         if(mounted){
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => const HomePage()));
+                          Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => const HomePage()), (Route<dynamic> route) => false);
                         }
                       }
                       else{

@@ -215,7 +215,8 @@ def emiliaRomagna(logger: diagnostic.Diagnostic, db: database.DatabaseHandler):
 								logger.record(msg= f"LAGO SCAFFOIOLO NIVO HA INVIATO DATI PERIODICI PER LA PRIMA VOLTA!!!!!!!!!!!. Record: {jsonRecord}", logLevel= diagnostic.INFO, module= MODULE)
 
 					except Exception as e:
-						logger.record(msg= f"Emilia Romagna: Error while checking accumulation data. Record: {jsonRecord}", logLevel= diagnostic.ERROR, module= MODULE, exc= e)
+						if datetimeObject.hour not in [8, 0] or datetimeObject.minute != 0:
+							logger.record(msg= f"Emilia Romagna: Error while checking accumulation data. Record: {jsonRecord}", logLevel= diagnostic.ERROR, module= MODULE, exc= e)
 						updateLastUpdate = False
 						saveAccumulationData = False
 
@@ -235,7 +236,8 @@ def emiliaRomagna(logger: diagnostic.Diagnostic, db: database.DatabaseHandler):
 							elif stationName in ["Succiso"]:
 								logger.record(msg= f"{stationName.upper()} HA INVIATO DATI INSTANTANETI PER LA PRIMA VOLTA!!!!!!!!!!!. Record: {jsonRecord}", logLevel= diagnostic.INFO, module= MODULE)
 					except Exception as e:
-						logger.record(msg= f"Emilia Romagna: Error while checking instantaneous data. Record: {jsonRecord}", logLevel= diagnostic.ERROR, module= MODULE, exc= e)
+						if datetimeObject.hour not in [8, 0] or datetimeObject.minute != 0:
+							logger.record(msg= f"Emilia Romagna: Error while checking instantaneous data. Record: {jsonRecord}", logLevel= diagnostic.ERROR, module= MODULE, exc= e)
 						saveInstantaneousData = False
 						updateLastUpdate = False
 
@@ -268,6 +270,9 @@ def toscana(logger: diagnostic.Diagnostic, db: database.DatabaseHandler):
 	windDirectionRowsPerStation = dict()
 	windSpeedRowsPerStation = dict()
 	umidityRowsPerStation = dict()
+
+	periodicRowAdded = 0
+	instantaneousRowAdded = 0
 
 	try:
 		stationsInfo = db.getStationRecords()
@@ -409,9 +414,11 @@ def toscana(logger: diagnostic.Diagnostic, db: database.DatabaseHandler):
 
 						if any(value != None for value in [temperature, umidity, windDirection, windSpeed]):
 							db.storeInstantaneousDataRecords([{"StationName": station, "Timestamp": timestampRecord, "Temperature": temperature, "Humidity": umidity, "WindDirection": windDirection, "WindSpeed": windSpeed}])
+							instantaneousRowAdded += 1
 
 						db.storePeriodicDataRecords([{"StationName": station, "StartTimestamp": timestampRecord-900, "EndTimestamp": timestampRecord, "Precipitation": precipitationRowsPerStation[station][timestampRecord]}])
 						db.updateLastUpdateOfStationRecords([{"Name": station, "LastUpdate": timestampRecord}])
+						periodicRowAdded += 1
 
 					except Exception as e:
 						logger.record(msg= f"Toscana: Error while handling record of Station: {station} and Timestamp: {timestampRecord}", logLevel= diagnostic.ERROR, module= MODULE, exc= e)
@@ -419,6 +426,8 @@ def toscana(logger: diagnostic.Diagnostic, db: database.DatabaseHandler):
 				logger.record(msg= f"Toscana: Error while handling data of Station: {station}", logLevel= diagnostic.CRITICAL, module= MODULE, exc= e)
 	except Exception as e:
 		logger.record(msg= f"Toscana: General exception", logLevel= diagnostic.CRITICAL, module= MODULE, exc= e)
+	else:
+		logger.record(msg= f"Toscana: Periodic data added: {periodicRowAdded}. Instantaneous data added: {instantaneousRowAdded}", logLevel= diagnostic.INFO, module= MODULE)
 
 if __name__ == "__main__":
 	# Install python packages

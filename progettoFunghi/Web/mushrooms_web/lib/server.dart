@@ -10,7 +10,7 @@ class Server {
   
   static final dio = Dio(
     BaseOptions(
-      baseUrl: 'https://famcaroli.ddns.net/server',
+      baseUrl: 'https://federicocaroli.hopto.org/server',
       connectTimeout: const Duration(seconds: 5),
       receiveTimeout: const Duration(seconds: 3),
     )

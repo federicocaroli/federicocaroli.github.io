@@ -84,7 +84,9 @@ class _SignUpFormState extends State<SignUpForm> {
     if (authWithCookie){
       Server.renewCookie().then<void>((result){
         if (result){
-          Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
+          if(mounted){
+            Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => const HomePage()), (Route<dynamic> route) => false);
+          }
         }
         else{
           if (mounted){

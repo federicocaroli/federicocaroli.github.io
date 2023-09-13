@@ -1,22 +1,12 @@
 import 'package:flutter/material.dart';
 import 'mushrooms.dart' as mushrooms;
 
-double _paddingCenterOnScreen(BuildContext context) {
-  if (MediaQuery.of(context).size.width > 960.0) {
-    return 90;
-  }
-  else {
-    return 20;
-  }
+bool _isLargeScreen(BuildContext context) {
+	return MediaQuery.of(context).size.width > 960.0;
 }
 
-double _paddingLeftOnScreen(BuildContext context) {
-  if (MediaQuery.of(context).size.width > 960.0) {
-    return 50;
-  }
-  else {
-    return 20;
-  }
+bool _isMediumScreen(BuildContext context) {
+	return MediaQuery.of(context).size.width > 640.0;
 }
 
 class MushroomsTypesPage extends StatefulWidget {
@@ -32,12 +22,12 @@ class _MushroomsTypesPageState extends State<MushroomsTypesPage> {
 
   Map<String, int> activePagePerMushroom = {};
 
-  List<Widget> indicators(imagesLength,currentIndex) {
+  List<Widget> indicators(imagesLength, currentIndex, size) {
     return List<Widget>.generate(imagesLength, (index) {
       return Container(
         margin: const EdgeInsets.all(3),
-        width: 10,
-        height: 10,
+        width: size,
+        height: size,
         decoration: BoxDecoration(
             color: currentIndex == index ? Colors.black : Colors.black26,
             shape: BoxShape.circle),
@@ -46,61 +36,112 @@ class _MushroomsTypesPageState extends State<MushroomsTypesPage> {
 }
 
   List<Widget> buildMushroom(BuildContext context, String name, String description, List<String> images){
-    return [
-        Container(
-          height: 30,
-          margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
-          child: Center(
-            child: Text(name, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.black))
-          ),
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Expanded(
-                flex: 2,
-                child: Container(
-                  padding: const EdgeInsets.fromLTRB(0, 0, 30, 0),
-                  margin: const EdgeInsets.fromLTRB(30, 20, 0, 0),
-                  child: Text(description.replaceAll('  ', ''), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.normal, color: Colors.black))
-                )
+    if (_isLargeScreen(context) == true){
+      return [
+          Container(
+            height: 30,
+            margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+            child: Center(
+              child: Text(name, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.black))
             ),
-            Expanded(
-              flex: 1,
-              child: Center(
-                child: Column(
-                  children: [
-                    SizedBox(
-                      height: 200,
-                      child: PageView.builder(
-                        itemCount: images.length,
-                        pageSnapping: true,
-                        onPageChanged: (page) {
-                          if(mounted){
-                            setState(() {
-                              activePagePerMushroom[name] = page;
-                            });
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Expanded(
+                  flex: 2,
+                  child: Container(
+                    padding: const EdgeInsets.fromLTRB(0, 0, 30, 0),
+                    margin: const EdgeInsets.fromLTRB(30, 20, 0, 0),
+                    child: Text(description.replaceAll('  ', ''), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.normal, color: Colors.black))
+                  )
+              ),
+              Expanded(
+                flex: 1,
+                child: Center(
+                  child: Column(
+                    children: [
+                      SizedBox(
+                        height: 200,
+                        child: PageView.builder(
+                          itemCount: images.length,
+                          pageSnapping: true,
+                          onPageChanged: (page) {
+                            if(mounted){
+                              setState(() {
+                                activePagePerMushroom[name] = page;
+                              });
+                            }
+                          },
+                          itemBuilder: (context, pagePosition) {
+                            return Container(
+                              margin: const EdgeInsets.all(10),
+                              child: Image.asset("assets/mushrooms/${images[activePagePerMushroom[name]!]}", fit: BoxFit.scaleDown),
+                            );
                           }
-                        },
-                        itemBuilder: (context, pagePosition) {
-                          return Container(
-                            margin: const EdgeInsets.all(10),
-                            child: Image.asset("assets/mushrooms/${images[activePagePerMushroom[name]!]}", fit: BoxFit.scaleDown),
-                          );
-                        }
+                        )
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: indicators(images.length, activePagePerMushroom[name]!, 10)
                       )
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: indicators(images.length, activePagePerMushroom[name]!)
-                    )
-                  ],
+                    ],
+                  )
                 )
+              ),
+            ],
+          )
+        ];
+    }
+    else {
+      return [
+          Container(
+            height: 30,
+            margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+            child: Center(
+              child: Text(name, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.black))
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.fromLTRB(0, 0, 30, 0),
+            margin: const EdgeInsets.fromLTRB(30, 20, 0, 0),
+            child: Text(description.replaceAll('  ', ''), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.normal, color: Colors.black))
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(0, 0, 0, 30),
+            child: Center(
+              child: Column(
+                children: [
+                  SizedBox(
+                    height: 200,
+                    child: PageView.builder(
+                      itemCount: images.length,
+                      pageSnapping: true,
+                      onPageChanged: (page) {
+                        if(mounted){
+                          setState(() {
+                            activePagePerMushroom[name] = page;
+                          });
+                        }
+                      },
+                      itemBuilder: (context, pagePosition) {
+                        return Container(
+                          margin: const EdgeInsets.all(10),
+                          child: Image.asset("assets/mushrooms/${images[activePagePerMushroom[name]!]}", fit: BoxFit.scaleDown),
+                        );
+                      }
+                    )
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: indicators(images.length, activePagePerMushroom[name]!, 5)
+                  )
+                ],
               )
             ),
-          ],
-        )
-      ];
+          )
+        ];
+    }
   }
 
   List<Widget> buildListOfMushrooms(BuildContext context){

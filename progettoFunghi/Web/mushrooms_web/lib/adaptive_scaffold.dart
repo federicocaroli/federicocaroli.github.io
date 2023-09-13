@@ -116,8 +116,8 @@ class _AdaptiveScaffoldState extends State<AdaptiveScaffold> {
 							destinations: [
 								...widget.destinations.map(
 									(d) => NavigationRailDestination(
-										icon: Icon(d.icon),
-										label: Text(d.title),
+										icon: Icon(d.icon, color: Colors.black,),
+										label: Text(d.title, style: const TextStyle(color: Colors.black)),
 									),
 								),
 							],
@@ -149,7 +149,8 @@ class _AdaptiveScaffoldState extends State<AdaptiveScaffold> {
 				items: [
 					...widget.destinations.map(
 						(d) => BottomNavigationBarItem(
-							icon: Icon(d.icon),
+              backgroundColor: Colors.lightGreen,
+							icon: Icon(d.icon, color: Colors.black,),
 							label: d.title,
 						),
 					),

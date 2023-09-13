@@ -9,6 +9,7 @@ import 'meteo.dart';
 import 'map_page.dart';
 import 'server.dart';
 import 'info_page.dart';
+import 'mushrooms_types.dart';
 
 class HomePage extends StatefulWidget {
 	const HomePage({
@@ -52,6 +53,7 @@ class _HomePageState extends State<HomePage> {
 				AdaptiveScaffoldDestination(title: 'Home', icon: Icons.home),
         AdaptiveScaffoldDestination(title: 'Dati', icon: Icons.dataset_outlined),
         AdaptiveScaffoldDestination(title: 'Mappa', icon: Icons.map),
+        AdaptiveScaffoldDestination(title: 'Funghi', icon: Icons.forest_sharp),
 			],
 			body: _pageAtIndex(_pageIndex),
 			onNavigationIndexChange: (newIndex) {
@@ -98,13 +100,16 @@ class _HomePageState extends State<HomePage> {
 
 	Widget _pageAtIndex(int index) {
 		if (index == 0){
-      return InfoPage();
+      return const InfoPage();
     }
     else if (index == 1) {
-			return MeteoPage();
+			return const MeteoPage();
 		}
     else if(index == 2){
-      return MapPage();
+      return const MapPage();
+    }
+    else if(index == 3){
+      return const MushroomsTypesPage();
     }
 		else{
 			return const Center(child: Text('Unknown Page'));

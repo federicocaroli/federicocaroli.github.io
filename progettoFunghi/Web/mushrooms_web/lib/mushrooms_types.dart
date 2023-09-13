@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 import 'mushrooms.dart' as mushrooms;
 
 bool _isLargeScreen(BuildContext context) {
@@ -61,25 +62,25 @@ class _MushroomsTypesPageState extends State<MushroomsTypesPage> {
                 child: Center(
                   child: Column(
                     children: [
-                      SizedBox(
-                        height: 200,
-                        child: PageView.builder(
-                          itemCount: images.length,
-                          pageSnapping: true,
-                          onPageChanged: (page) {
+                      CarouselSlider.builder(
+                        itemCount: images.length,
+                        itemBuilder: (BuildContext context, int itemIndex, int pageViewIndex) => Container(
+                              margin: const EdgeInsets.all(10),
+                              child: Image.asset("assets/mushrooms/${images[itemIndex]}", fit: BoxFit.scaleDown),
+                            ),
+                        options: CarouselOptions(
+                          height: 200, 
+                          autoPlay: true, 
+                          enlargeCenterPage: true, 
+                          enableInfiniteScroll: false,
+                          onPageChanged: (int page, CarouselPageChangedReason reason) {
                             if(mounted){
                               setState(() {
                                 activePagePerMushroom[name] = page;
                               });
                             }
-                          },
-                          itemBuilder: (context, pagePosition) {
-                            return Container(
-                              margin: const EdgeInsets.all(10),
-                              child: Image.asset("assets/mushrooms/${images[activePagePerMushroom[name]!]}", fit: BoxFit.scaleDown),
-                            );
                           }
-                        )
+                        ),
                       ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -112,25 +113,25 @@ class _MushroomsTypesPageState extends State<MushroomsTypesPage> {
             child: Center(
               child: Column(
                 children: [
-                  SizedBox(
-                    height: 200,
-                    child: PageView.builder(
-                      itemCount: images.length,
-                      pageSnapping: true,
-                      onPageChanged: (page) {
+                  CarouselSlider.builder(
+                    itemCount: images.length,
+                    itemBuilder: (BuildContext context, int itemIndex, int pageViewIndex) => Container(
+                          margin: const EdgeInsets.all(10),
+                          child: Image.asset("assets/mushrooms/${images[itemIndex]}", fit: BoxFit.scaleDown),
+                        ),
+                    options: CarouselOptions(
+                      height: 200, 
+                      autoPlay: true, 
+                      enlargeCenterPage: true, 
+                      enableInfiniteScroll: false,
+                      onPageChanged: (int page, CarouselPageChangedReason reason) {
                         if(mounted){
                           setState(() {
                             activePagePerMushroom[name] = page;
                           });
                         }
-                      },
-                      itemBuilder: (context, pagePosition) {
-                        return Container(
-                          margin: const EdgeInsets.all(10),
-                          child: Image.asset("assets/mushrooms/${images[activePagePerMushroom[name]!]}", fit: BoxFit.scaleDown),
-                        );
                       }
-                    )
+                    ),
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,

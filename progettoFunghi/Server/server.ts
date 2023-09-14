@@ -2,7 +2,8 @@ import express, {Request, Response, Express} from 'express';
 import jwt from "jsonwebtoken";
 import cors from "cors";
 import {MariaDBHandler} from "./database";
-import { type } from 'os';
+import fs from 'fs';
+import 'package:flutter/foundation.dart';
 
 // Create the PostgreSQL handler
 var dbHandler = new MariaDBHandler(
@@ -216,7 +217,7 @@ mushroomServer.post('/get_stations', parser, async (req: Request, res: Response)
 	catch(err){
 		errorOccurred(`Error in get_stations API\n${err}`, res, "Error in get_stations API");
 	}
-})
+});
 
 mushroomServer.post('/get_data_of_stations', parser, async (req: Request, res: Response) => {
 	
@@ -445,7 +446,7 @@ mushroomServer.post('/get_data_of_stations', parser, async (req: Request, res: R
 	catch(err){
 		errorOccurred(`Error in get_data_of_stations API\n${err}`, res, "Error in get_data_of_stations API");
 	}
-})
+});
 
 mushroomServer.post('/renew', parser, async (req: Request, res: Response) => {
 	
@@ -490,6 +491,32 @@ mushroomServer.post('/renew', parser, async (req: Request, res: Response) => {
 	}
 
 });
+
+mushroomServer.get('/mushroomsDataExport.xlsx', parser, async (req: Request, res: Response) => {
+	
+	// Check if an auth token is present
+	/*try {
+		if (validateJwt(req, USER_LEVEL) == false) {
+			res.status(403).json({reason: "authentication"});
+			return;
+		}
+	} catch(err) {
+		errorOccurred(`Error while checking JWT get_excel_file API\n${err}`, res, "Error while checking JWT get_excel_file API");
+		return;
+	}*/
+	
+	try{
+		if (fs.existsSync("/home/kerolla/Mushrooms/client/mushroomsDataExport.xlsx")) {
+			res.status(200).sendFile("/home/kerolla/Mushrooms/client/mushroomsDataExport.xlsx");
+		} 
+		else {
+			errorOccurred(`Error in get_excel_file API. File doesn't exist\n`, res, "Error in get_excel_file API");
+		}
+	}
+	catch(err){
+		errorOccurred(`Error in get_excel_file API\n${err}`, res, "Error in get_excel_file API");
+	}
+})
 
 try {
 	var handler = mushroomServer.listen(serverPort, "localhost", async () => {

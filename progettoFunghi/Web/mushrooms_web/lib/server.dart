@@ -1,6 +1,10 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'dart:convert';
 import 'package:universal_html/html.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:universal_html/html.dart' as html;
+import 'package:permission_handler/permission_handler.dart';
 
 class AuthenticationException implements Exception {
   AuthenticationException();
@@ -129,6 +133,33 @@ class Server {
     }
   }
 
+  static Future<void> getExcelFile() async {
+    try{
+      await renewCookie();
+    }
+    catch (e){
+      rethrow;
+    }
+    
+    try{
+      if(kIsWeb){
+        downloadWeb(url: 'https://federicocaroli.hopto.org/server/mushroomsDataExport.xlsx');
+      }
+      else{
+        downloadMobile(url: 'https://federicocaroli.hopto.org/server/mushroomsDataExport.xlsx');
+      }
+    }
+    on DioException catch(dioError){
+      throw Exception('Problema sconosciuto. $dioError');
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  static Future<void> downloadWeb({required String url}) async {
+    html.window.open(url, "_blank");
+  }
+
   static Future<bool> renewCookie() async {
     try {
       if(WebStorage.instance.token == "" || WebStorage.instance.username == ""){
@@ -170,6 +201,28 @@ class Server {
     catch (e) {
       rethrow;
     }
+  }
+
+  static Future<void> downloadMobile({required String url}) async {
+    // requests permission for downloading the file
+    bool hasPermission = await _requestWritePermission();
+    if (!hasPermission) return;
+
+    // gets the directory where we will download the file.
+    var dir = await getApplicationDocumentsDirectory();
+
+    // You should put the name you want for the file here.
+    // Take in account the extension.
+    String fileName = 'mushroomsDataExport.xlsx';
+    
+    // downloads the file
+    await dio.download(url, "${dir.path}/$fileName");
+  }
+
+  // requests storage permission
+  static Future<bool> _requestWritePermission() async {
+    await Permission.storage.request();
+    return await Permission.storage.request().isGranted;
   }
 
   static void signOut(){

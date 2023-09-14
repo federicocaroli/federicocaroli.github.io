@@ -110,7 +110,30 @@ class _MeteoPagePageState extends State<MeteoPage> {
                 mouseCursor: MaterialStateMouseCursor.textable,
               ),
               onPressed: (){
-
+                Server.getExcelFile()
+                  .catchError((error) async {
+                    print(error);
+                    await showDialog(context: context, 
+                    builder: (BuildContext context){
+                      return AlertDialog(
+                        title: const Text('Attenzione'),
+                        content: const Text(
+                          'Errore scoccuro durante il download del file.'
+                        ),
+                        actions: <Widget>[
+                          TextButton(
+                            style: TextButton.styleFrom(
+                              textStyle: Theme.of(context).textTheme.labelLarge,
+                            ),
+                            child: const Text('OK'),
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                          )
+                        ],
+                      );
+                    });
+                  });
               },
               child: const Text("Scaricati dati ultimo mese", style: TextStyle(color: Colors.grey, fontSize: 15, decoration: TextDecoration.underline))
             )
@@ -446,7 +469,30 @@ class _MeteoPagePageState extends State<MeteoPage> {
                 mouseCursor: MaterialStateMouseCursor.textable,
               ),
               onPressed: (){
-
+                Server.getExcelFile()
+                  .catchError((error) async {
+                    print(error);
+                    await showDialog(context: context, 
+                    builder: (BuildContext context){
+                      return AlertDialog(
+                        title: const Text('Attenzione'),
+                        content: const Text(
+                          'Errore scoccuro durante il download del file.'
+                        ),
+                        actions: <Widget>[
+                          TextButton(
+                            style: TextButton.styleFrom(
+                              textStyle: Theme.of(context).textTheme.labelLarge,
+                            ),
+                            child: const Text('OK'),
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                          )
+                        ],
+                      );
+                    });
+                  });
               },
               child: const Text("Scaricati dati ultimo mese", style: TextStyle(color: Colors.grey, fontSize: 15, decoration: TextDecoration.underline))
             )

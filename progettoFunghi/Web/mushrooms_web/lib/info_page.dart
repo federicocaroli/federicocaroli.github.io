@@ -60,7 +60,13 @@ class InfoPage extends StatelessWidget {
           Padding(
             padding: EdgeInsets.fromLTRB(_paddingCenterOnScreen(context), 15, _paddingCenterOnScreen(context), 0),
             child: const Center(
-              child: Text("La mappa è interattiva, perciò è possibile spostarsi a piacimento in tutto il mondo ed ingrandire/rimpicciolire la mappa così da poter visualizzare più/meno dettagli del territorio.", style: TextStyle(fontSize: 15, fontWeight: FontWeight.normal, color: Colors.black))
+              child: Text("La mappa è interattiva, perciò è possibile spostarsi a piacimento in tutto il mondo ed", style: TextStyle(fontSize: 15, fontWeight: FontWeight.normal, color: Colors.black))
+            )
+          ),
+          Padding(
+            padding: EdgeInsets.fromLTRB(_paddingCenterOnScreen(context), 5, _paddingCenterOnScreen(context), 0),
+            child: const Center(
+              child: Text("ingrandire/rimpicciolire la mappa così da poter visualizzare più/meno dettagli del territorio.", style: TextStyle(fontSize: 15, fontWeight: FontWeight.normal, color: Colors.black))
             )
           ),
           const Padding(
@@ -103,6 +109,18 @@ class InfoPage extends StatelessWidget {
             padding: EdgeInsets.fromLTRB(_paddingCenterOnScreen(context), 5, _paddingCenterOnScreen(context), 0),
             child: const Center(
               child: Text("Periodo di durata maggiore di 7 giorni --> dati raggruppati in intervalli di 24 ore.", style: TextStyle(fontSize: 15, fontWeight: FontWeight.normal, color: Colors.black))
+            )
+          ),
+          Padding(
+            padding: EdgeInsets.fromLTRB(_paddingCenterOnScreen(context), 30, _paddingCenterOnScreen(context), 0),
+            child: const Center(
+              child: Text("In aggiunta, attraverso apposito pulsante, è possibile scaricare un file excel", style: TextStyle(fontSize: 15, fontWeight: FontWeight.normal, color: Colors.black))
+            )
+          ),
+          Padding(
+            padding: EdgeInsets.fromLTRB(_paddingCenterOnScreen(context), 5, _paddingCenterOnScreen(context), 0),
+            child: const Center(
+              child: Text("contenente i dati degli ultimi 30 giorni di tutte le stazioni meteorologiche.", style: TextStyle(fontSize: 15, fontWeight: FontWeight.normal, color: Colors.black))
             )
           ),
           Padding(

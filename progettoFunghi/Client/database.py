@@ -287,6 +287,75 @@ class DatabaseHandler:
 				cur.close()
 				conn.close()
 
+	def getAverageInstantaneousDataOfStationInPeriod(self, station: str, startTimestamp: int, endTimestamp: int):
+		if type(station) != str or type(startTimestamp) != int or type(endTimestamp) != int:
+			raise TypeError("Database getAverageInstantaneousDataOfStationInPeriod method")
+		elif self._status != True or self._connectionsPool == None:
+			raise Exception(f"Impossible to get average instantaneous data of station in period from DB because status is False or connection pool is None. Station: {station}, startTimestamp: {startTimestamp}, endTimestamp: {endTimestamp}. Status: {self._status}")
+		
+		conn, cur = self._getConnectionWithDatabase()
+
+		try:
+			cur.execute("SELECT AVG(Temperature) as Temperature, AVG(Humidity) as Humidity, AVG(WindSpeed) as WindSpeed, AVG(WindDirection) as WindDirection FROM INSTANTANEOUS_DATA WHERE StationName = ? AND Timestamp >= ? AND Timestamp < ?", [station, startTimestamp, endTimestamp])
+			
+			records = cur.fetchall()
+			if len(records) > 0:
+				return {'Temperature': records[0][0], 'Humidity': records[0][1], 'WindSpeed': records[0][2], 'WindDirection': records[0][3]}
+			
+			raise None		
+		except Exception as e:
+			self._logger.record(msg= f"Exception occured while getting average instantaneous data of station in period from DB. Station: {station}, startTimestamp: {startTimestamp}, endTimestamp: {endTimestamp}", logLevel= diagnostic.ERROR, module=_MODULE, exc= e)
+			raise e
+		finally:
+			cur.close()
+			conn.close()
+	
+	def getSumPeriodicDataOfStationInPeriod(self, station: str, startTimestamp: int, endTimestamp: int):
+		if type(station) != str or type(startTimestamp) != int or type(endTimestamp) != int:
+			raise TypeError("Database getSumPeriodicDataOfStationInPeriod method")
+		elif self._status != True or self._connectionsPool == None:
+			raise Exception(f"Impossible to get sum of periodic data of station in period from DB because status is False or connection pool is None. Station: {station}, startTimestamp: {startTimestamp}, endTimestamp: {endTimestamp}. Status: {self._status}")
+		
+		conn, cur = self._getConnectionWithDatabase()
+
+		try:
+			cur.execute("SELECT SUM(Precipitation) as Somma FROM PERIODIC_DATA WHERE StationName = ? AND StartTimestamp >= ? AND EndTimestamp < ?", [station, startTimestamp, endTimestamp])
+			
+			records = cur.fetchall()
+			if len(records) > 0:
+				return {'Precipitation': records[0][0]}
+			
+			raise None		
+		except Exception as e:
+			self._logger.record(msg= f"Exception occured while getting sum of periodic data of station in period from DB. Station: {station}, startTimestamp: {startTimestamp}, endTimestamp: {endTimestamp}", logLevel= diagnostic.ERROR, module=_MODULE, exc= e)
+			raise e
+		finally:
+			cur.close()
+			conn.close()
+	
+	def getMinMaxTemperatureOfStationInPeriod(self, station: str, startTimestamp: int, endTimestamp: int):
+		if type(station) != str or type(startTimestamp) != int or type(endTimestamp) != int:
+			raise TypeError("Database getMinMaxTemperatureOfStationInPeriod method")
+		elif self._status != True or self._connectionsPool == None:
+			raise Exception(f"Impossible to get min/max temp of station in period from DB because status is False or connection pool is None. Station: {station}, startTimestamp: {startTimestamp}, endTimestamp: {endTimestamp}. Status: {self._status}")
+		
+		conn, cur = self._getConnectionWithDatabase()
+
+		try:
+			cur.execute("SELECT MIN(Temperature) as MinTemperature, MAX(Temperature) as MaxTemperature FROM INSTANTANEOUS_DATA WHERE StationName = ? AND Timestamp >= ? AND Timestamp < ?", [station, startTimestamp, endTimestamp])
+			
+			records = cur.fetchall()
+			if len(records) > 0:
+				return {'MinTemp': records[0][0], 'MaxTemp': records[0][1]}
+			
+			raise None		
+		except Exception as e:
+			self._logger.record(msg= f"Exception occured while getting min/max temp of station in period from DB. Station: {station}, startTimestamp: {startTimestamp}, endTimestamp: {endTimestamp}", logLevel= diagnostic.ERROR, module=_MODULE, exc= e)
+			raise e
+		finally:
+			cur.close()
+			conn.close()
+
 if __name__ == "__main__":
 	import json
 	arguments = len(sys.argv) - 1

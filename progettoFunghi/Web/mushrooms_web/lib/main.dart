@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'home.dart';
 import 'server.dart';
+import 'mushrooms_types.dart';
 
 void main() {
 	runApp(const Mushrooms());
@@ -187,7 +188,21 @@ class _SignUpFormState extends State<SignUpForm> {
                 padding: const EdgeInsets.only(top: 15),
                 child: Text(_error, style: const TextStyle(color: Colors.red))
               )
-            )
+            ),
+            Container(
+              padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+              width: MediaQuery.of(context).size.width*0.8,
+              child: TextButton(
+                style: ButtonStyle(
+                  padding: MaterialStateProperty.all<EdgeInsets>(const EdgeInsets.fromLTRB(0, 20, 0, 20)),
+                  mouseCursor: MaterialStateMouseCursor.textable,
+                ),
+                onPressed: (){
+                  Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => const MushroomsTypesPage()), (Route<dynamic> route) => false);
+                },
+                child: const Text("Accesso offline", style: TextStyle(color: Colors.grey, fontSize: 15, decoration: TextDecoration.underline))
+              )
+          )
           ]
         )
       ),

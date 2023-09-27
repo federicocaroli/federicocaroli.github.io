@@ -2,6 +2,17 @@ library mushrooms;
 
 var listOfMushrooms = <Map>[
   {
+    'name': 'Agaricus campestris - Prataiolo',
+    'description': '''L'Agaricus campestris, a tutti noto con il nome Prataiolo, appartiene ad un genere di specie diverse che crescono spontaneamente nei prati, da cui la definizione di “funghi prataioli”.
+                    I funghi prataioli si possono trovare oltre che nei prati, anche nei boschi, nei campi coltivati e perfino nei centri abitati, anche se di questi ultimi se ne sconsiglia la raccolta per questioni igieniche.
+                    È di piccole dimensioni e si riconosce perché quando è fresco presenta delle lamelle di un bel colore rosa. Quando maturano le spore, le lamelle si scuriscono fino ad assumere un colore brunito.
+                    Il cappello può essere bianco o tendente al grigio oppure brunastro. Questa è senza dubbio la varietà di Prataiolo spontanea più diffusa.
+                    Oltre alle specie edibili ce ne sono altre del tutto simili ma tossiche. Riconoscerle però non è complicato. Le specie velenose infatti quando vengono tagliate emanano uno sgradevolissimo odore di inchiostro.
+                    Ottimo commestibile. Da giovane può essere consumato crudo in insalata. Allo stadio adulto devono essere cotti e consumati quando le lamelle sono ancora rosee e non bruno-nerastre (inizio della putrefazione).
+                    ''',
+    'images': ['Agaricus_campestris.jpg', 'Agaricus_campestris_b.jpg', 'Agaricus_campestris_c.jpg']
+  },
+  {
     'name': 'Amanita caesarea - Ovolo',
     'description': '''Ha un cappello abbastanza grande che può raggiungere, raramente, i 15 cm di diametro, inizialmente globoso tendente prima a diventare emisferico, poi appianato, con margine nettamente striato. I colori della cuticola (pellicola che ricopre il cappello dei funghi) oscillano tra il giallo arancio e il rosso arancio. Placche bianche del velo generale possono rimanere attaccate al cappello specialmente negli esemplari giovani.
                       Il gambo, giallo dorato, è abbastanza lungo (fino a 15 cm di altezza), robusto e di forma cilindrica. È ornato da un elegante ed ampio anello pendulo e da una volva membranosa bianca. Le lamelle sono fitte e dello stesso colore del gambo.

@@ -119,6 +119,15 @@ var listOfMushrooms = <Map>[
     'images': ['Cyclocybe_aegerita.jpg', 'Cyclocybe_aegerita_b.jpg', 'Cyclocybe_aegerita_c.jpg', 'Cyclocybe_aegerita_d.jpg']
   },
   {
+    'name': 'Hydnum repandum - Steccherino',
+    'description': '''L'Hydnum repandum è un fungo molto apprezzato e ricercato della famiglia delle Hydnaceae conosciuto ai più con l'appellativo volgare di "steccherino", per via degli aculei presenti sotto il cappello.
+    Infatti, esso è facilmente riconoscibile perché possiede aculei al posto delle lamelle, questi vanno tolti perché dall'intenso sapore amarognolo, meglio farlo direttamente sulla fungaia per facilitare la dispersione delle spore in habitat.
+    La forma ed il colore sono pressappoco quelli del Gallinaccio/Galletto, ma dall'aspetto decisamente più massiccio, ed irregolare, con molti lobi, soprattutto a margine del cappello, ma a volte questi possono svilupparsi anche al centro del cappello stesso con curiose protuberanze.
+    È un buon commestibile.
+    ''',
+    'images': ['Hydnum_repandum_a.jpg', 'Hydnum_repandum_b.jpg', 'Hydnum_repandum_c.jpg']
+  },
+  {
     'name': 'Hygrophorus poetarum',
     'description': '''Il cappello di questo fungo (con diametro di oltre 15 cm), inizialmente convesso o conico-convesso, poi più o meno appianato, talvolta gibboso e piuttosto carnoso, ha il margine lobato-sinuoso, involuto ed un po' eccedente. La sua cuticola (pellicola che ricopre il cappello dei funghi), liscia, vischiosa con tempo umido, è di colore crema incarnato, rosa incarnato, più colorata al centro, molto più chiara (anche bianca) verso il bordo.
                     Ha un gambo robusto, pieno e piuttosto spesso, alto fino a 10 cm, pruinoso alla sommità, fibrilloso satinato altrove, cilindrico, generalmente ingrossato all'apice e rastremato alla base, talvolta ventricoso ed affusolato-appiattito verso il basso, a superficie crema rosa chiaro, a volte quasi bianca, con fini squamette ocra rosa.

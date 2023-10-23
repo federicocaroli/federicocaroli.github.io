@@ -19,9 +19,45 @@ class _MapPagePageState extends State<MapPage> {
   final List<Widget> _listViewChildren = [];
   late MapController _mapController;
   final List<Widget> _layers = [];
+  Map<String, Map<dynamic, dynamic>> _stations = {};
   double _latitude = 44.267946, _longitude = 10.503911, _zoom = 12;
   final double _maxZoom = 18, _minZoom = 1;
   Widget loadingWidget = const Center(child: CircularProgressIndicator());
+  int _indexStationSelected = -1;
+
+  Card buildListTileCard(String station, num altitude, double latitude, double longitude, String lastUpdateString, String sensorsString, int index){
+    return Card(
+      child: ListTile(
+        title: Text("$station. Altitudine: $altitude m. Ultimo aggiornamento: $lastUpdateString. Sensori: $sensorsString"),
+        onTap: (){
+          if (_indexStationSelected != index){
+            moveCenterOfMap(latitude, longitude);
+            if (mounted){
+              setState(() {
+                _indexStationSelected = index;
+              });
+            }
+          }
+        },
+      ),
+    );
+  }
+
+  Marker buildPin(String stationName, LatLng point, Color iconColor) {
+    return Marker(
+      point: point,
+      builder: (context) => Column(children: <Widget>[
+        Container(
+          alignment: Alignment.center,
+          color: Colors.white,
+          child: Text(stationName),
+        ),
+        Icon(Icons.location_pin, size: 50, color: iconColor)
+      ]),
+      width: 100,
+      height: 100,
+    );
+  }
 
 	@override
 	void initState() {
@@ -30,15 +66,16 @@ class _MapPagePageState extends State<MapPage> {
     _mapController = MapController();
 
     _layers.add(
-      TileLayer(
-        urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-        userAgentPackageName: 'com.example.app',
-      )
+      const MarkerLayer(
+        markers: []
+      ),
     );
 
     Server.getStationsInfo().then<void>((stations) {
       if(mounted){
         setState(() {
+          _stations = stations;
+          var index = 0;
           for (final station in stations.keys){
             var lastUpdateDatetime = DateTime.fromMillisecondsSinceEpoch(int.parse(stations[station]!['lastUpdate']) * 1000);
             var lastUpdateString = DateFormat('dd/MM/yyyy HH:mm').format(lastUpdateDatetime);
@@ -56,40 +93,10 @@ class _MapPagePageState extends State<MapPage> {
             }
 
             _listViewChildren.add(
-              Card(
-                child: ListTile(
-                  title: Text("$station. Altitudine: ${stations[station]!['altitude']} m. Ultimo aggiornamento: $lastUpdateString. Sensori: $sensorsString"),
-                  onTap: (){
-                    moveCenterOfMap(stations[station]!["latitude"], stations[station]!["longitude"]);
-                    if (mounted){
-                      setState(() {
-                        _layers.clear();
-                        _layers.add(
-                          TileLayer(
-                            urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                            userAgentPackageName: 'com.example.app',
-                          )
-                        );
-                        _layers.add(
-                          CircleLayer(
-                            circles: [
-                              CircleMarker(
-                                point: LatLng(stations[station]!["latitude"], stations[station]!["longitude"]),
-                                color: Colors.red.withOpacity(0.7),
-                                borderColor: Colors.black,
-                                borderStrokeWidth: 2,
-                                radius: 300,
-                                useRadiusInMeter: true,
-                              ),
-                            ],
-                          ),
-                        );
-                      });
-                    }
-                  },
-                ),
-              ),
+              buildListTileCard(station, stations[station]!['altitude'], stations[station]!["latitude"], stations[station]!["longitude"], lastUpdateString, sensorsString, index)
             );
+
+            index++;
           }
 
           loadingWidget = ListView(
@@ -166,6 +173,24 @@ class _MapPagePageState extends State<MapPage> {
 
 	@override
   Widget build(BuildContext context) {
+
+    List<Marker> markers = [];
+
+    var index = 0;
+    for(final station in _stations.keys){
+      if (_indexStationSelected != index){
+        markers.add(buildPin(station, LatLng(_stations[station]!["latitude"], _stations[station]!["longitude"]), Colors.black));
+      }
+      else {
+        markers.add(buildPin(station, LatLng(_stations[station]!["latitude"], _stations[station]!["longitude"]), Colors.red));
+      }
+      index++;
+    }
+
+    _layers[0] = MarkerLayer(
+      markers: markers
+    );
+
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.all(8),
@@ -216,7 +241,13 @@ class _MapPagePageState extends State<MapPage> {
                     ),
                   ),
                 ],
-                children: _layers,
+                children: [
+                  TileLayer(
+                    urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    userAgentPackageName: 'com.example.app',
+                  ),
+                  ..._layers
+                ],
               )
             ),
             Expanded(

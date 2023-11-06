@@ -10,6 +10,7 @@ import 'map_page.dart';
 import 'server.dart';
 import 'info_page.dart';
 import 'mushrooms_types.dart';
+import 'checklist.dart';
 
 class HomePage extends StatefulWidget {
 	const HomePage({
@@ -54,6 +55,7 @@ class _HomePageState extends State<HomePage> {
         AdaptiveScaffoldDestination(title: 'Dati', icon: Icons.dataset_outlined),
         AdaptiveScaffoldDestination(title: 'Mappa', icon: Icons.map),
         AdaptiveScaffoldDestination(title: 'Funghi', icon: Icons.forest_sharp),
+        AdaptiveScaffoldDestination(title: 'Equipaggiamento', icon: Icons.backpack),
 			],
 			body: _pageAtIndex(_pageIndex),
 			onNavigationIndexChange: (newIndex) {
@@ -110,6 +112,9 @@ class _HomePageState extends State<HomePage> {
     }
     else if(index == 3){
       return const MushroomsTypesPage();
+    }
+    else if(index == 4){
+      return const ChecklistPage();
     }
 		else{
 			return const Center(child: Text('Unknown Page'));

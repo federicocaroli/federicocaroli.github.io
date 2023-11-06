@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 double _paddingCenterOnScreen(BuildContext context) {
   if (MediaQuery.of(context).size.width > 960.0) {
@@ -17,6 +18,12 @@ double _paddingLeftOnScreen(BuildContext context) {
     return 20;
   }
 }
+
+Future<void> _launchUrl() async {
+  Uri _url = Uri.parse("https://docs.google.com/spreadsheets/d/1nRL3KW4tFt-XVSr2VmYGl1-QOfrHzrjJ4ZG4uGTkLB0/edit?usp=sharing");
+  await launchUrl(_url);
+}
+
 
 class InfoPage extends StatelessWidget {
 	const InfoPage({super.key});
@@ -38,6 +45,43 @@ class InfoPage extends StatelessWidget {
             child: Center(
               child: Text("Applicazione per la raccolta dati sulle specie fungine", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black))
             ),
+          ),
+          const Padding(
+            padding: EdgeInsets.fromLTRB(0, 50, 0, 0),
+            child: Center(
+              child: Text("File Excel con informazioni su altri fungai", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black))
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.fromLTRB(_paddingCenterOnScreen(context), 20, _paddingCenterOnScreen(context), 0),
+            child: const Center(
+              child: Text("Attraverso il seguente pulsante è possibile accedere ad un file excel contenente tutte le informazioni raccolte sui nostri avversari.", style: TextStyle(fontSize: 15, fontWeight: FontWeight.normal, color: Colors.black))
+            )
+          ),
+          Padding(
+            padding: EdgeInsets.fromLTRB(_paddingCenterOnScreen(context), 5, _paddingCenterOnScreen(context), 0),
+            child: const Center(
+              child: Text("' ' ' Se conosci il nemico e te stesso, la tua vittoria è sicura. Se conosci te stesso ma non il nemico, le tue probabilità di vincere e perdere sono uguali. Se non conosci il nemico e nemmeno te stesso,soccomberai in ogni battaglia. ' ' '", style: TextStyle(fontSize: 15, fontWeight: FontWeight.normal, color: Colors.black))
+            )
+          ),
+          Padding(
+            padding: EdgeInsets.fromLTRB(_paddingCenterOnScreen(context), 30, _paddingCenterOnScreen(context), 0),
+            child: UnconstrainedBox(
+              child: Container(
+                height: 30,
+                width: MediaQuery.of(context).size.width*0.3 >= 200 ? 200 : MediaQuery.of(context).size.width*0.3,
+                decoration: BoxDecoration(
+                  color: Colors.lightBlue.shade300, borderRadius: BorderRadius.circular(20)
+                ),
+                child: const TextButton(
+                  onPressed: _launchUrl,
+                  child: Text(
+                    'File Excel',
+                    style: TextStyle(color: Colors.white, fontSize: 15),
+                  ),
+                ),
+              )
+            )
           ),
           const Padding(
             padding: EdgeInsets.fromLTRB(0, 50, 0, 0),

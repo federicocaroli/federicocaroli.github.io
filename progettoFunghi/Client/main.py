@@ -156,11 +156,9 @@ def emiliaRomagna(logger: diagnostic.Diagnostic, db: database.DatabaseHandler):
 							elif dataElem["timerange"][0] == 254:
 								if DATA_CODES.TEMPERATURE in dataElem["vars"] and instantaneousData["Temperature"] == None and dataElem["vars"][DATA_CODES.TEMPERATURE][ER_GENERIC_VALUE_KEY] != None:
 									instantaneousData["Temperature"] = dataElem["vars"][DATA_CODES.TEMPERATURE][ER_GENERIC_VALUE_KEY] - 273.15
-									if instantaneousData["Temperature"] < 0:
-										raise Exception(f"Temperature value is negative. Record: {jsonRecord}")
 								elif DATA_CODES.TEMPERATURE in dataElem["vars"] and instantaneousData["Temperature"] != None:
 									logger.record(msg= f"Duplicated Temperature in the same record. Record: {jsonRecord}", logLevel= diagnostic.WARNING, module= MODULE)
-								
+							
 								if DATA_CODES.RELATIVE_HUMIDITY in dataElem["vars"] and instantaneousData["Humidity"] == None and dataElem["vars"][DATA_CODES.RELATIVE_HUMIDITY][ER_GENERIC_VALUE_KEY] != None:
 									instantaneousData["Humidity"] = dataElem["vars"][DATA_CODES.RELATIVE_HUMIDITY][ER_GENERIC_VALUE_KEY]
 								elif DATA_CODES.RELATIVE_HUMIDITY in dataElem["vars"] and instantaneousData["Humidity"] != None:
@@ -179,16 +177,16 @@ def emiliaRomagna(logger: diagnostic.Diagnostic, db: database.DatabaseHandler):
 							logger.record(msg= f"Emilia Romagna: Unknown record format. Record: {jsonRecord}", logLevel= diagnostic.WARNING, module= MODULE)
 					
 					if stationName is None:
-						raise Exception(f"Station name not present in {jsonRecord}")
+						raise Exception(f"Station name not present")
 					elif stationName not in ER_STATIONS:
 						continue
 					elif stationName not in stationsInfo:
 						if stationLatitude is None:
-							raise Exception(f"Station latitude not present in {jsonRecord}")
+							raise Exception(f"Station latitude not present")
 						elif stationLongitude is None:
-							raise Exception(f"Station longitude not present in {jsonRecord}")
+							raise Exception(f"Station longitude not present")
 						elif stationAltitude is None:
-							raise Exception(f"Station altitude not present in {jsonRecord}")
+							raise Exception(f"Station altitude not present")
 						else:
 							db.addNewStationRecords([{"Name": stationName, "Latitude": stationLatitude, "Longitude": stationLongitude, "Altitude": stationAltitude}])
 							stationsInfo = db.getStationRecords()
